@@ -967,9 +967,9 @@ function Holerite({ employees, records }) {
   const rate = employee?.commissionRate ?? 2;
   const commission = employee?.hasCommission && sales > threshold ? (sales - threshold) * (rate / 100) : 0;
 
-  const workedMinutes = monthRecords.reduce((sum, r) => sum + calculateWorkedMinutes(r), 0);
+  const totalWorkedMinutes = monthRecords.reduce((sum, r) => sum + workedMinutes(r), 0);
   const expectedMinutes = workingDays * (employee?.expectedDailyMinutes ?? 0);
-  const balanceMinutes = workedMinutes - expectedMinutes;
+  const balanceMinutes = totalWorkedMinutes - expectedMinutes;
   const totalEarnings = salary + vaTotal + vtTotal + commission;
 
   const lines = [
@@ -1041,7 +1041,7 @@ function Holerite({ employees, records }) {
             <div className="holerite-jornada-grid">
               <div><b>Dias trabalhados</b><span>{workingDays}</span></div>
               <div><b>Horas previstas</b><span>{minutesToTime(expectedMinutes)}</span></div>
-              <div><b>Horas trabalhadas</b><span>{minutesToTime(workedMinutes)}</span></div>
+              <div><b>Horas trabalhadas</b><span>{minutesToTime(totalWorkedMinutes)}</span></div>
               <div><b>Saldo de horas</b><span className={balanceMinutes < 0 ? "negative" : ""}>{balanceMinutes >= 0 ? "+" : ""}{minutesToTime(balanceMinutes)}</span></div>
             </div>
           </div>
