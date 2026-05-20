@@ -951,6 +951,10 @@ function Holerite({ employees, records }) {
   const [empId, setEmpId] = useState(activeEmployees[0]?.id ?? "");
   const [month, setMonth] = useState(currentMonthIso());
   const [salesAmount, setSalesAmount] = useState("");
+  const [faltasInjust, setFaltasInjust] = useState("0");
+  const [faltasJust, setFaltasJust] = useState("0");
+  const [calcMethod, setCalcMethod] = useState("30");
+  const [diasUteis, setDiasUteis] = useState("22");
 
   const employee = employees.find((e) => e.id === empId);
   const monthRecords = records.filter((r) => r.employeeId === empId && r.date.startsWith(month));
@@ -970,13 +974,24 @@ function Holerite({ employees, records }) {
   const totalWorkedMinutes = monthRecords.reduce((sum, r) => sum + workedMinutes(r), 0);
   const expectedMinutes = workingDays * (employee?.expectedDailyMinutes ?? 0);
   const balanceMinutes = totalWorkedMinutes - expectedMinutes;
-  const totalEarnings = salary + vaTotal + vtTotal + commission;
 
-  const lines = [
+  const faltas = Math.max(0, Number(faltasInjust) || 0);
+  const justificadas = Math.max(0, Number(faltasJust) || 0);
+  const divisor = calcMethod === "uteis" ? Math.max(1, Number(diasUteis) || 22) : 30;
+  const descontoFalta = faltas > 0 && salary > 0 ? (salary / divisor) * faltas : 0;
+
+  const totalProventos = salary + vaTotal + vtTotal + commission;
+  const totalLiquido = totalProventos - descontoFalta;
+
+  const proventos = [
     { label: "Salario base", value: salary },
     vaTotal > 0 && { label: `VA (${workingDays} dias x ${formatBRL(vaDaily)})`, value: vaTotal },
     vtTotal > 0 && { label: `VT (${workingDays} dias x ${formatBRL(vtDaily)})`, value: vtTotal },
     commission > 0 && { label: `Comissao ${rate}% s/ excedente de ${formatBRL(sales - threshold)}`, value: commission }
+  ].filter(Boolean);
+
+  const descontos = [
+    descontoFalta > 0 && { label: `Falta injustificada (${faltas} dia${faltas > 1 ? "s" : ""} x ${formatBRL(salary / divisor)})`, value: descontoFalta }
   ].filter(Boolean);
 
   return (
@@ -993,6 +1008,37 @@ function Holerite({ employees, records }) {
           Mes de referencia
           <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
         </label>
+
+        <label>
+          Faltas injustificadas (dias)
+          <input type="number" min="0" value={faltasInjust} onChange={(e) => setFaltasInjust(e.target.value)} placeholder="0" />
+        </label>
+        <label>
+          Faltas justificadas — atestado, etc. (dias)
+          <input type="number" min="0" value={faltasJust} onChange={(e) => setFaltasJust(e.target.value)} placeholder="0" />
+        </label>
+
+        <div style={{ gridColumn: "1/-1" }}>
+          <span style={{ fontWeight: 600, fontSize: "0.875rem", display: "block", marginBottom: "8px" }}>Metodo de calculo do desconto por falta</span>
+          <div style={{ display: "flex", gap: "24px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "normal", cursor: "pointer" }}>
+              <input type="radio" name="calcMethod" value="30" checked={calcMethod === "30"} onChange={() => setCalcMethod("30")} />
+              ÷ 30 dias (padrao CLT)
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "normal", cursor: "pointer" }}>
+              <input type="radio" name="calcMethod" value="uteis" checked={calcMethod === "uteis"} onChange={() => setCalcMethod("uteis")} />
+              Dias uteis do mes
+            </label>
+          </div>
+        </div>
+
+        {calcMethod === "uteis" && (
+          <label>
+            Total de dias uteis no mes
+            <input type="number" min="1" max="31" value={diasUteis} onChange={(e) => setDiasUteis(e.target.value)} placeholder="22" />
+          </label>
+        )}
+
         {employee?.hasCommission && (
           <label style={{ gridColumn: "1/-1" }}>
             Total de vendas no mes (R$) — comissao acima de {formatBRL(threshold)}
@@ -1027,12 +1073,20 @@ function Holerite({ employees, records }) {
               <tr><th>Proventos</th><th>Valor</th></tr>
             </thead>
             <tbody>
-              {lines.map((line, i) => (
+              {proventos.map((line, i) => (
                 <tr key={i}><td>{line.label}</td><td>{formatBRL(line.value)}</td></tr>
+              ))}
+              {descontos.length > 0 && (
+                <tr className="holerite-section-header">
+                  <td colSpan={2}>Descontos</td>
+                </tr>
+              )}
+              {descontos.map((line, i) => (
+                <tr key={i} className="holerite-desconto"><td>{line.label}</td><td>– {formatBRL(line.value)}</td></tr>
               ))}
             </tbody>
             <tfoot>
-              <tr><td>TOTAL LIQUIDO</td><td>{formatBRL(totalEarnings)}</td></tr>
+              <tr><td>TOTAL LIQUIDO</td><td>{formatBRL(totalLiquido)}</td></tr>
             </tfoot>
           </table>
 
@@ -1040,6 +1094,8 @@ function Holerite({ employees, records }) {
             <strong>Jornada do mes</strong>
             <div className="holerite-jornada-grid">
               <div><b>Dias trabalhados</b><span>{workingDays}</span></div>
+              {faltas > 0 && <div><b>Faltas injustificadas</b><span className="negative">{faltas} dia{faltas > 1 ? "s" : ""}</span></div>}
+              {justificadas > 0 && <div><b>Faltas justificadas</b><span>{justificadas} dia{justificadas > 1 ? "s" : ""}</span></div>}
               <div><b>Horas previstas</b><span>{minutesToTime(expectedMinutes)}</span></div>
               <div><b>Horas trabalhadas</b><span>{minutesToTime(totalWorkedMinutes)}</span></div>
               <div><b>Saldo de horas</b><span className={balanceMinutes < 0 ? "negative" : ""}>{balanceMinutes >= 0 ? "+" : ""}{minutesToTime(balanceMinutes)}</span></div>

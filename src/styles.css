@@ -956,6 +956,20 @@ main {
   padding-top: 14px;
 }
 
+.holerite-table tr.holerite-section-header td {
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-top: 10px;
+}
+
+.holerite-table tr.holerite-desconto td {
+  color: #dc2626;
+}
+
 .holerite-jornada {
   padding: 14px;
   background: var(--base);
