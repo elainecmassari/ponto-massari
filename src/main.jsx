@@ -127,6 +127,7 @@ function App() {
   const [adjustment, setAdjustment] = useState(emptyAdjustment(isConfigured ? "" : employeesSeed[0].id));
   const [loading, setLoading] = useState(isConfigured);
   const [saving, setSaving] = useState(false);
+  const [editingEmployeeId, setEditingEmployeeId] = useState(null);
 
   const isAdmin = currentUser?.role === "admin";
   const currentEmployee = currentUser?.employeeId ? employees.find((e) => e.id === currentUser.employeeId) : null;
@@ -390,6 +391,70 @@ function App() {
     }
   }
 
+  function startEditEmployee(employee) {
+    setEmployeeForm({
+      name: employee.name,
+      document: employee.document,
+      position: employee.position,
+      department: employee.department,
+      admissionDate: employee.admissionDate || todayIso(),
+      entryTime: employee.entryTime || "08:30",
+      exitTime: employee.exitTime || "17:45",
+      lunchOut: employee.lunchOut || "12:00",
+      lunchIn: employee.lunchIn || "13:00",
+      salary: employee.salary ? String(employee.salary) : "",
+      va: employee.va ? String(employee.va) : "",
+      vt: employee.vt ? String(employee.vt) : ""
+    });
+    setEditingEmployeeId(employee.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function saveEditEmployee(event) {
+    event.preventDefault();
+    if (!employeeForm.name || !employeeForm.position) {
+      window.alert("Informe nome e cargo.");
+      return;
+    }
+    const expectedMinutes = scheduleToMinutes(employeeForm);
+    const updated = {
+      full_name: employeeForm.name.trim(),
+      document: employeeForm.document.trim(),
+      position: employeeForm.position.trim(),
+      department: employeeForm.department.trim() || "Geral",
+      admission_date: employeeForm.admissionDate || todayIso(),
+      expected_daily_minutes: expectedMinutes,
+      entry_time: employeeForm.entryTime || null,
+      exit_time: employeeForm.exitTime || null,
+      lunch_out: employeeForm.lunchOut || null,
+      lunch_in: employeeForm.lunchIn || null,
+      salary: employeeForm.salary ? Number(employeeForm.salary.replace(",", ".")) : 0,
+      va: employeeForm.va ? Number(employeeForm.va.replace(",", ".")) : 0,
+      vt: employeeForm.vt ? Number(employeeForm.vt.replace(",", ".")) : 0
+    };
+
+    if (!isConfigured) {
+      setEmployees((prev) => prev.map((e) => e.id === editingEmployeeId ? { ...e, ...mapEmployee({ ...e, ...updated, id: e.id, profile_id: e.profileId, admission_date: updated.admission_date, expected_daily_minutes: updated.expected_daily_minutes, entry_time: updated.entry_time, exit_time: updated.exit_time, lunch_out: updated.lunch_out, lunch_in: updated.lunch_in } ) } : e));
+      setEditingEmployeeId(null);
+      setEmployeeForm(emptyEmployeeForm());
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.from("employees").update(updated).eq("id", editingEmployeeId).select().single();
+      if (error) throw error;
+      setEmployees((prev) => prev.map((e) => e.id === editingEmployeeId ? mapEmployee(data) : e));
+      setEditingEmployeeId(null);
+      setEmployeeForm(emptyEmployeeForm());
+      window.alert("Funcionario atualizado com sucesso!");
+    } catch (err) {
+      window.alert(`Erro ao atualizar: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function toggleEmployeeStatus(employeeId) {
     const employee = employees.find((e) => e.id === employeeId);
     if (!employee) return;
@@ -515,7 +580,9 @@ function App() {
         )}
         {isAdmin && tab === "Funcionarios" && (
           <Employees employees={employees} users={users} form={employeeForm} setForm={setEmployeeForm}
-            saveEmployee={saveEmployee} saving={saving} onToggleStatus={toggleEmployeeStatus} onDelete={deleteEmployee} />
+            saveEmployee={saveEmployee} saving={saving} onToggleStatus={toggleEmployeeStatus} onDelete={deleteEmployee}
+            editingId={editingEmployeeId} onEdit={startEditEmployee} onSaveEdit={saveEditEmployee}
+            onCancelEdit={() => { setEditingEmployeeId(null); setEmployeeForm(emptyEmployeeForm()); }} />
         )}
         {isAdmin && tab === "Ajustes" && (
           <Adjustments employees={employees} records={records} form={adjustment} setForm={setAdjustment}
@@ -758,11 +825,12 @@ function EmployeeScheduleInfo({ employee }) {
   );
 }
 
-function Employees({ employees, users, form, setForm, saveEmployee, saving, onToggleStatus, onDelete }) {
+function Employees({ employees, users, form, setForm, saveEmployee, saving, onToggleStatus, onDelete, editingId, onEdit, onSaveEdit, onCancelEdit }) {
+  const isEditing = Boolean(editingId);
   return (
     <>
-      <h2>Novo funcionario</h2>
-      <form className="panel" onSubmit={saveEmployee}>
+      <h2>{isEditing ? "Editar funcionario" : "Novo funcionario"}</h2>
+      <form className="panel" onSubmit={isEditing ? onSaveEdit : saveEmployee}>
         <p style={{ color: "var(--muted)", fontSize: "13px", margin: "-4px 0 4px" }}>Dados pessoais</p>
         <div className="form-grid">
           <Field label="Nome completo" value={form.name} onChange={(name) => setForm({ ...form, name })} />
@@ -787,10 +855,17 @@ function Employees({ employees, users, form, setForm, saveEmployee, saving, onTo
           <Field label="Vale transporte — VT (R$)" value={form.vt} onChange={(vt) => setForm({ ...form, vt })} />
         </div>
 
-        <button className="primary full" disabled={saving} style={{ marginTop: "4px" }}>
-          {saving ? <Loader2 size={18} className="spin" /> : <Plus size={18} />}
-          {saving ? "Cadastrando..." : "Cadastrar funcionario"}
-        </button>
+        <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+          <button className="primary full" disabled={saving}>
+            {saving ? <Loader2 size={18} className="spin" /> : isEditing ? <Save size={18} /> : <Plus size={18} />}
+            {saving ? (isEditing ? "Salvando..." : "Cadastrando...") : isEditing ? "Salvar alteracoes" : "Cadastrar funcionario"}
+          </button>
+          {isEditing && (
+            <button type="button" className="secondary" onClick={onCancelEdit} style={{ minWidth: "120px" }}>
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       <h2>Funcionarios</h2>
@@ -827,6 +902,9 @@ function Employees({ employees, users, form, setForm, saveEmployee, saving, onTo
               </div>
 
               <div style={{ display: "flex", gap: "var(--sp-2)", flexWrap: "wrap" }}>
+                <button className="secondary" onClick={() => onEdit(employee)}>
+                  <Edit3 size={18} /> Editar
+                </button>
                 <button className="secondary" onClick={() => onToggleStatus(employee.id)}>
                   {employee.active ? <PauseCircle size={18} /> : <PlayCircle size={18} />} {employee.active ? "Inativar" : "Ativar"}
                 </button>
