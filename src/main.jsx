@@ -1093,14 +1093,23 @@ function Holerite({ employees, records }) {
 
           <div className="holerite-jornada">
             <strong>Jornada do mes</strong>
+
+            <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-secondary)", margin: "10px 0 4px" }}>Resumo do mes</p>
             <div className="holerite-jornada-grid">
-              <div><b>Dias uteis no mes</b><span>{totalDiasUteis}</span></div>
+              <div><b>Dias uteis</b><span>{totalDiasUteis}</span></div>
               <div><b>Dias trabalhados</b><span>{workingDays}</span></div>
               {faltasInjust > 0 && <div><b>Faltas injustificadas</b><span className="negative">{faltasInjust} dia{faltasInjust > 1 ? "s" : ""}</span></div>}
               {justificadas > 0 && <div><b>Faltas justificadas</b><span>{justificadas} dia{justificadas > 1 ? "s" : ""}</span></div>}
+              <div><b>Horas previstas no mes</b><span>{minutesToTime(totalDiasUteis * (employee?.expectedDailyMinutes ?? 0))}</span></div>
+              <div><b>Horas trabalhadas</b><span>{minutesToTime(totalWorkedMinutes)}</span></div>
+              <div><b>Saldo geral</b><span className={totalWorkedMinutes - totalDiasUteis * (employee?.expectedDailyMinutes ?? 0) < 0 ? "negative" : ""}>{totalWorkedMinutes - totalDiasUteis * (employee?.expectedDailyMinutes ?? 0) >= 0 ? "+" : ""}{minutesToTime(totalWorkedMinutes - totalDiasUteis * (employee?.expectedDailyMinutes ?? 0))}</span></div>
+            </div>
+
+            <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-secondary)", margin: "12px 0 4px" }}>Pontualidade nos dias trabalhados</p>
+            <div className="holerite-jornada-grid">
               <div><b>Horas previstas</b><span>{minutesToTime(expectedMinutes)}</span></div>
               <div><b>Horas trabalhadas</b><span>{minutesToTime(totalWorkedMinutes)}</span></div>
-              <div><b>Saldo de horas</b><span className={balanceMinutes < 0 ? "negative" : ""}>{balanceMinutes >= 0 ? "+" : ""}{minutesToTime(balanceMinutes)}</span></div>
+              <div><b>Saldo do periodo</b><span className={balanceMinutes < 0 ? "negative" : ""}>{balanceMinutes >= 0 ? "+" : ""}{minutesToTime(balanceMinutes)}</span></div>
             </div>
           </div>
 
