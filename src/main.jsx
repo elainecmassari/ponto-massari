@@ -310,22 +310,25 @@ function App() {
 
     setSaving(true);
     try {
+      // Guarda sessao do admin antes do signUp (que pode trocar a sessao)
+      const { data: { session: adminSession } } = await supabase.auth.getSession();
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: newEmail,
         password: newPin,
-        options: { data: { full_name: employeeForm.name.trim() } }
+        options: { data: { full_name: employeeForm.name.trim(), role: "employee" } }
       });
       if (authError) throw authError;
 
-      const userId = authData.user.id;
+      // Restaura sessao do admin (trigger ja criou o perfil automaticamente)
+      if (adminSession) {
+        await supabase.auth.setSession({
+          access_token: adminSession.access_token,
+          refresh_token: adminSession.refresh_token
+        });
+      }
 
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: userId,
-        full_name: employeeForm.name.trim(),
-        email: newEmail,
-        role: "employee"
-      });
-      if (profileError) throw profileError;
+      const userId = authData.user.id;
 
       const { data: empData, error: empError } = await supabase.from("employees").insert({
         profile_id: userId,
