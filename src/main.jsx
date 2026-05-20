@@ -85,7 +85,14 @@ function mapEmployee(row) {
     admissionDate: row.admission_date,
     expectedDailyMinutes: row.expected_daily_minutes,
     active: row.active,
-    profileId: row.profile_id ?? null
+    profileId: row.profile_id ?? null,
+    entryTime: row.entry_time ?? "",
+    exitTime: row.exit_time ?? "",
+    lunchOut: row.lunch_out ?? "",
+    lunchIn: row.lunch_in ?? "",
+    salary: Number(row.salary ?? 0),
+    va: Number(row.va ?? 0),
+    vt: Number(row.vt ?? 0)
   };
 }
 
@@ -346,7 +353,14 @@ function App() {
         department: employeeForm.department.trim() || "Geral",
         admission_date: employeeForm.admissionDate || todayIso(),
         expected_daily_minutes: expectedMinutes,
-        active: true
+        active: true,
+        entry_time: employeeForm.entryTime || null,
+        exit_time: employeeForm.exitTime || null,
+        lunch_out: employeeForm.lunchOut || null,
+        lunch_in: employeeForm.lunchIn || null,
+        salary: employeeForm.salary ? Number(employeeForm.salary.replace(",", ".")) : 0,
+        va: employeeForm.va ? Number(employeeForm.va.replace(",", ".")) : 0,
+        vt: employeeForm.vt ? Number(employeeForm.vt.replace(",", ".")) : 0
       }).select().single();
       if (empError) throw empError;
 
@@ -725,42 +739,94 @@ function CalendarView({ employees, records, month, setMonth, employeeFilter = "a
   );
 }
 
+function formatBRL(value) {
+  if (!value && value !== 0) return "—";
+  return Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function EmployeeScheduleInfo({ employee }) {
+  const hasSchedule = employee.entryTime || employee.exitTime;
+  if (!hasSchedule) return null;
+  const parts = [];
+  if (employee.entryTime) parts.push(`Entrada ${employee.entryTime}`);
+  if (employee.lunchOut && employee.lunchIn) parts.push(`Almoco ${employee.lunchOut}–${employee.lunchIn}`);
+  if (employee.exitTime) parts.push(`Saida ${employee.exitTime}`);
+  return (
+    <p style={{ fontSize: "13px" }}>
+      ⏰ {parts.join(" | ")} — <strong style={{ color: "var(--ink)" }}>{minutesToTime(employee.expectedDailyMinutes)}/dia</strong>
+    </p>
+  );
+}
+
 function Employees({ employees, users, form, setForm, saveEmployee, saving, onToggleStatus, onDelete }) {
   return (
     <>
       <h2>Novo funcionario</h2>
-      <form className="panel form-grid" onSubmit={saveEmployee}>
-        <Field label="Nome" value={form.name} onChange={(name) => setForm({ ...form, name })} />
-        <Field label="CPF ou documento" value={form.document} onChange={(document) => setForm({ ...form, document })} />
-        <Field label="Cargo" value={form.position} onChange={(position) => setForm({ ...form, position })} />
-        <Field label="Setor" value={form.department} onChange={(department) => setForm({ ...form, department })} />
-        <Field label="Admissao" value={form.admissionDate} onChange={(admissionDate) => setForm({ ...form, admissionDate })} />
-        <Field label="Entrada (ex: 08:30)" value={form.entryTime} onChange={(entryTime) => setForm({ ...form, entryTime })} />
-        <Field label="Saida (ex: 17:45)" value={form.exitTime} onChange={(exitTime) => setForm({ ...form, exitTime })} />
-        <Field label="Almoco saida (ex: 12:00)" value={form.lunchOut} onChange={(lunchOut) => setForm({ ...form, lunchOut })} />
-        <Field label="Almoco volta (ex: 13:00)" value={form.lunchIn} onChange={(lunchIn) => setForm({ ...form, lunchIn })} />
-        <button className="primary full" disabled={saving}>
+      <form className="panel" onSubmit={saveEmployee}>
+        <p style={{ color: "var(--muted)", fontSize: "13px", margin: "-4px 0 4px" }}>Dados pessoais</p>
+        <div className="form-grid">
+          <Field label="Nome completo" value={form.name} onChange={(name) => setForm({ ...form, name })} />
+          <Field label="CPF ou documento" value={form.document} onChange={(document) => setForm({ ...form, document })} />
+          <Field label="Cargo" value={form.position} onChange={(position) => setForm({ ...form, position })} />
+          <Field label="Setor / Departamento" value={form.department} onChange={(department) => setForm({ ...form, department })} />
+          <Field label="Data de admissao" value={form.admissionDate} onChange={(admissionDate) => setForm({ ...form, admissionDate })} />
+        </div>
+
+        <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "8px" }}>Horario de trabalho</p>
+        <div className="form-grid">
+          <Field label="Entrada (ex: 08:30)" value={form.entryTime} onChange={(entryTime) => setForm({ ...form, entryTime })} />
+          <Field label="Saida (ex: 17:45)" value={form.exitTime} onChange={(exitTime) => setForm({ ...form, exitTime })} />
+          <Field label="Saida almoco (ex: 12:00)" value={form.lunchOut} onChange={(lunchOut) => setForm({ ...form, lunchOut })} />
+          <Field label="Volta almoco (ex: 13:00)" value={form.lunchIn} onChange={(lunchIn) => setForm({ ...form, lunchIn })} />
+        </div>
+
+        <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "8px" }}>Remuneracao mensal</p>
+        <div className="form-grid">
+          <Field label="Salario (R$)" value={form.salary} onChange={(salary) => setForm({ ...form, salary })} />
+          <Field label="Vale alimentacao — VA (R$)" value={form.va} onChange={(va) => setForm({ ...form, va })} />
+          <Field label="Vale transporte — VT (R$)" value={form.vt} onChange={(vt) => setForm({ ...form, vt })} />
+        </div>
+
+        <button className="primary full" disabled={saving} style={{ marginTop: "4px" }}>
           {saving ? <Loader2 size={18} className="spin" /> : <Plus size={18} />}
           {saving ? "Cadastrando..." : "Cadastrar funcionario"}
         </button>
       </form>
+
       <h2>Funcionarios</h2>
       <div className="cards">
         {employees.map((employee) => {
           const user = users.find((item) => item.employeeId === employee.id);
+          const loginEmail = user ? user.email : (isConfigured ? buildEmployeeEmail(employee.name) : null);
+          const loginPin = user ? user.pin : null;
           return (
             <article className="card" key={employee.id}>
               <div className="card-head">
                 <div>
                   <h3>{employee.name}</h3>
-                  <p>{employee.position} | {employee.department}</p>
+                  <p>{employee.position}{employee.department ? ` | ${employee.department}` : ""}</p>
                 </div>
                 <Pill tone={employee.active ? "green" : "red"}>{employee.active ? "Ativo" : "Inativo"}</Pill>
               </div>
-              <p>Jornada: {minutesToTime(employee.expectedDailyMinutes)} por dia</p>
-              {user && <p>Login: {user.email} | PIN {user.pin}</p>}
-              {isConfigured && !user && <p>Login: {buildEmployeeEmail(employee.name)}</p>}
-              <div style={{ display: "flex", gap: "var(--sp-2)" }}>
+
+              <div style={{ display: "grid", gap: "4px" }}>
+                <EmployeeScheduleInfo employee={employee} />
+                {employee.admissionDate && (
+                  <p style={{ fontSize: "13px" }}>📅 Admissao: <strong style={{ color: "var(--ink)" }}>{formatDate(employee.admissionDate)}</strong></p>
+                )}
+                {(employee.salary > 0 || employee.va > 0 || employee.vt > 0) && (
+                  <p style={{ fontSize: "13px" }}>
+                    💰 Salario: <strong style={{ color: "var(--ink)" }}>{formatBRL(employee.salary)}</strong>
+                    {employee.va > 0 && <> | VA: <strong style={{ color: "var(--ink)" }}>{formatBRL(employee.va)}</strong></>}
+                    {employee.vt > 0 && <> | VT: <strong style={{ color: "var(--ink)" }}>{formatBRL(employee.vt)}</strong></>}
+                  </p>
+                )}
+                {loginEmail && (
+                  <p style={{ fontSize: "13px" }}>🔑 Login: <strong style={{ color: "var(--ink)" }}>{loginEmail}</strong>{loginPin ? ` | PIN: ${loginPin}` : ""}</p>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "var(--sp-2)", flexWrap: "wrap" }}>
                 <button className="secondary" onClick={() => onToggleStatus(employee.id)}>
                   {employee.active ? <PauseCircle size={18} /> : <PlayCircle size={18} />} {employee.active ? "Inativar" : "Ativar"}
                 </button>
@@ -1087,7 +1153,7 @@ function scheduleToMinutes(form) {
 }
 
 function emptyEmployeeForm() {
-  return { name: "", document: "", position: "", department: "", admissionDate: todayIso(), entryTime: "08:30", exitTime: "17:45", lunchOut: "12:00", lunchIn: "13:00" };
+  return { name: "", document: "", position: "", department: "", admissionDate: todayIso(), entryTime: "08:30", exitTime: "17:45", lunchOut: "12:00", lunchIn: "13:00", salary: "", va: "", vt: "" };
 }
 
 function emptyAdjustment(employeeId) {

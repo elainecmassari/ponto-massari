@@ -18,6 +18,13 @@ export type Employee = {
   admissionDate: string;
   expectedDailyMinutes: number;
   active: boolean;
+  entryTime?: string;
+  exitTime?: string;
+  lunchOut?: string;
+  lunchIn?: string;
+  salary?: number;
+  va?: number;
+  vt?: number;
 };
 
 export type PunchField = "clockIn" | "lunchOut" | "lunchIn" | "clockOut";
@@ -56,4 +63,11 @@ export type EmployeeForm = {
   department: string;
   admissionDate: string;
   expectedHours: string;
+  entryTime: string;
+  exitTime: string;
+  lunchOut: string;
+  lunchIn: string;
+  salary: string;
+  va: string;
+  vt: string;
 };
