@@ -92,7 +92,10 @@ function mapEmployee(row) {
     lunchIn: row.lunch_in ?? "",
     salary: Number(row.salary ?? 0),
     va: Number(row.va ?? 0),
-    vt: Number(row.vt ?? 0)
+    vt: Number(row.vt ?? 0),
+    hasCommission: row.has_commission ?? false,
+    commissionThreshold: Number(row.commission_threshold ?? 80000),
+    commissionRate: Number(row.commission_rate ?? 2)
   };
 }
 
@@ -361,7 +364,10 @@ function App() {
         lunch_in: employeeForm.lunchIn || null,
         salary: employeeForm.salary ? Number(employeeForm.salary.replace(",", ".")) : 0,
         va: employeeForm.va ? Number(employeeForm.va.replace(",", ".")) : 0,
-        vt: employeeForm.vt ? Number(employeeForm.vt.replace(",", ".")) : 0
+        vt: employeeForm.vt ? Number(employeeForm.vt.replace(",", ".")) : 0,
+        has_commission: employeeForm.hasCommission,
+        commission_threshold: employeeForm.commissionThreshold ? Number(employeeForm.commissionThreshold.replace(",", ".")) : 80000,
+        commission_rate: employeeForm.commissionRate ? Number(employeeForm.commissionRate.replace(",", ".")) : 2
       }).select().single();
       if (empError) throw empError;
 
@@ -430,7 +436,10 @@ function App() {
       lunch_in: employeeForm.lunchIn || null,
       salary: employeeForm.salary ? Number(employeeForm.salary.replace(",", ".")) : 0,
       va: employeeForm.va ? Number(employeeForm.va.replace(",", ".")) : 0,
-      vt: employeeForm.vt ? Number(employeeForm.vt.replace(",", ".")) : 0
+      vt: employeeForm.vt ? Number(employeeForm.vt.replace(",", ".")) : 0,
+      has_commission: employeeForm.hasCommission,
+      commission_threshold: employeeForm.commissionThreshold ? Number(employeeForm.commissionThreshold.replace(",", ".")) : 80000,
+      commission_rate: employeeForm.commissionRate ? Number(employeeForm.commissionRate.replace(",", ".")) : 2
     };
 
     if (!isConfigured) {
@@ -537,7 +546,7 @@ function App() {
     );
   }
 
-  const tabs = isAdmin ? ["Painel", "Calendario", "Relatorios", "Funcionarios", "Ajustes"] : ["Ponto", "Calendario", "Meu mes"];
+  const tabs = isAdmin ? ["Painel", "Calendario", "Relatorios", "Holerite", "Funcionarios", "Ajustes"] : ["Ponto", "Calendario", "Meu mes"];
 
   return (
     <div className="app-shell">
@@ -578,6 +587,7 @@ function App() {
             employeeFilter={employeeFilter} setEmployeeFilter={setEmployeeFilter}
             csv={csv} generateCsv={() => setCsv(reportToCsv(rows))} showEmployeeFilter />
         )}
+        {isAdmin && tab === "Holerite" && <Holerite employees={employees} records={records} />}
         {isAdmin && tab === "Funcionarios" && (
           <Employees employees={employees} users={users} form={employeeForm} setForm={setEmployeeForm}
             saveEmployee={saveEmployee} saving={saving} onToggleStatus={toggleEmployeeStatus} onDelete={deleteEmployee}
@@ -850,9 +860,24 @@ function Employees({ employees, users, form, setForm, saveEmployee, saving, onTo
 
         <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "8px" }}>Remuneracao mensal</p>
         <div className="form-grid">
-          <Field label="Salario (R$)" value={form.salary} onChange={(salary) => setForm({ ...form, salary })} />
-          <Field label="Vale alimentacao — VA (R$)" value={form.va} onChange={(va) => setForm({ ...form, va })} />
-          <Field label="Vale transporte — VT (R$)" value={form.vt} onChange={(vt) => setForm({ ...form, vt })} />
+          <Field label="Salario base (R$)" value={form.salary} onChange={(salary) => setForm({ ...form, salary })} />
+          <Field label="VA — Vale alimentacao (R$/dia)" value={form.va} onChange={(va) => setForm({ ...form, va })} />
+          <Field label="VT — Vale transporte (R$/dia)" value={form.vt} onChange={(vt) => setForm({ ...form, vt })} />
+        </div>
+
+        <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "8px" }}>Comissao por vendas</p>
+        <div className="form-grid">
+          <label style={{ gridColumn: "1/-1", flexDirection: "row", alignItems: "center", display: "flex", gap: "10px", cursor: "pointer" }}>
+            <input type="checkbox" checked={form.hasCommission} onChange={(e) => setForm({ ...form, hasCommission: e.target.checked })}
+              style={{ width: "18px", minHeight: "auto" }} />
+            <span style={{ color: "var(--ink-soft)", fontWeight: 600 }}>Este funcionario recebe comissao por vendas</span>
+          </label>
+          {form.hasCommission && (
+            <>
+              <Field label="Meta minima (R$)" value={form.commissionThreshold} onChange={(commissionThreshold) => setForm({ ...form, commissionThreshold })} />
+              <Field label="% de comissao sobre o excedente" value={form.commissionRate} onChange={(commissionRate) => setForm({ ...form, commissionRate })} />
+            </>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
@@ -916,6 +941,122 @@ function Employees({ employees, users, form, setForm, saveEmployee, saving, onTo
           );
         })}
       </div>
+    </>
+  );
+}
+
+function Holerite({ employees, records }) {
+  const activeEmployees = employees.filter((e) => e.active);
+  const [empId, setEmpId] = useState(activeEmployees[0]?.id ?? "");
+  const [month, setMonth] = useState(currentMonthIso());
+  const [salesAmount, setSalesAmount] = useState("");
+
+  const employee = employees.find((e) => e.id === empId);
+  const monthRecords = records.filter((r) => r.employeeId === empId && r.date.startsWith(month));
+  const workingDays = monthRecords.length;
+
+  const salary = employee?.salary ?? 0;
+  const vaDaily = employee?.va ?? 0;
+  const vtDaily = employee?.vt ?? 0;
+  const vaTotal = workingDays * vaDaily;
+  const vtTotal = workingDays * vtDaily;
+
+  const sales = Number(String(salesAmount).replace(/\./g, "").replace(",", ".")) || 0;
+  const threshold = employee?.commissionThreshold ?? 80000;
+  const rate = employee?.commissionRate ?? 2;
+  const commission = employee?.hasCommission && sales > threshold ? (sales - threshold) * (rate / 100) : 0;
+
+  const workedMinutes = monthRecords.reduce((sum, r) => sum + calculateWorkedMinutes(r), 0);
+  const expectedMinutes = workingDays * (employee?.expectedDailyMinutes ?? 0);
+  const balanceMinutes = workedMinutes - expectedMinutes;
+  const totalEarnings = salary + vaTotal + vtTotal + commission;
+
+  const lines = [
+    { label: "Salario base", value: salary },
+    vaTotal > 0 && { label: `VA (${workingDays} dias x ${formatBRL(vaDaily)})`, value: vaTotal },
+    vtTotal > 0 && { label: `VT (${workingDays} dias x ${formatBRL(vtDaily)})`, value: vtTotal },
+    commission > 0 && { label: `Comissao ${rate}% s/ excedente de ${formatBRL(sales - threshold)}`, value: commission }
+  ].filter(Boolean);
+
+  return (
+    <>
+      <h2>Holerite</h2>
+      <div className="panel form-grid" style={{ marginBottom: "16px" }}>
+        <label>
+          Funcionario
+          <select value={empId} onChange={(e) => setEmpId(e.target.value)}>
+            {activeEmployees.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </select>
+        </label>
+        <label>
+          Mes de referencia
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
+        </label>
+        {employee?.hasCommission && (
+          <label style={{ gridColumn: "1/-1" }}>
+            Total de vendas no mes (R$) — comissao acima de {formatBRL(threshold)}
+            <input value={salesAmount} onChange={(e) => setSalesAmount(e.target.value)} placeholder="Ex: 90000" />
+          </label>
+        )}
+      </div>
+
+      {employee && (
+        <div className="holerite-sheet" id="holerite-print">
+          <div className="holerite-header">
+            <div>
+              <strong>{brand.company}</strong>
+              <span>CNPJ: — | {employee.department || "—"}</span>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <strong>HOLERITE</strong>
+              <span>{monthLabel(month)}</span>
+            </div>
+          </div>
+
+          <div className="holerite-employee">
+            <div><b>Funcionario</b><span>{employee.name}</span></div>
+            <div><b>Cargo</b><span>{employee.position}</span></div>
+            <div><b>Setor</b><span>{employee.department || "—"}</span></div>
+            <div><b>Admissao</b><span>{employee.admissionDate ? formatDate(employee.admissionDate) : "—"}</span></div>
+            {employee.entryTime && <div><b>Horario</b><span>{employee.entryTime} – {employee.exitTime} | Almoco {employee.lunchOut}–{employee.lunchIn}</span></div>}
+          </div>
+
+          <table className="holerite-table">
+            <thead>
+              <tr><th>Proventos</th><th>Valor</th></tr>
+            </thead>
+            <tbody>
+              {lines.map((line, i) => (
+                <tr key={i}><td>{line.label}</td><td>{formatBRL(line.value)}</td></tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr><td>TOTAL LIQUIDO</td><td>{formatBRL(totalEarnings)}</td></tr>
+            </tfoot>
+          </table>
+
+          <div className="holerite-jornada">
+            <strong>Jornada do mes</strong>
+            <div className="holerite-jornada-grid">
+              <div><b>Dias trabalhados</b><span>{workingDays}</span></div>
+              <div><b>Horas previstas</b><span>{minutesToTime(expectedMinutes)}</span></div>
+              <div><b>Horas trabalhadas</b><span>{minutesToTime(workedMinutes)}</span></div>
+              <div><b>Saldo de horas</b><span className={balanceMinutes < 0 ? "negative" : ""}>{balanceMinutes >= 0 ? "+" : ""}{minutesToTime(balanceMinutes)}</span></div>
+            </div>
+          </div>
+
+          <div className="holerite-footer">
+            <div className="holerite-assinatura"><span>Assinatura do funcionario</span></div>
+            <div className="holerite-assinatura"><span>Assinatura do empregador</span></div>
+          </div>
+        </div>
+      )}
+
+      {employee && (
+        <button className="primary" style={{ marginTop: "16px" }} onClick={() => window.print()}>
+          <Download size={18} /> Imprimir / Salvar PDF
+        </button>
+      )}
     </>
   );
 }
@@ -1231,7 +1372,7 @@ function scheduleToMinutes(form) {
 }
 
 function emptyEmployeeForm() {
-  return { name: "", document: "", position: "", department: "", admissionDate: todayIso(), entryTime: "08:30", exitTime: "17:45", lunchOut: "12:00", lunchIn: "13:00", salary: "", va: "", vt: "" };
+  return { name: "", document: "", position: "", department: "", admissionDate: todayIso(), entryTime: "08:30", exitTime: "17:45", lunchOut: "12:00", lunchIn: "13:00", salary: "", va: "", vt: "", hasCommission: false, commissionThreshold: "80000", commissionRate: "2" };
 }
 
 function emptyAdjustment(employeeId) {

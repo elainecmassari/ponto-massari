@@ -858,6 +858,177 @@ main {
   to { transform: rotate(360deg); }
 }
 
+/* ── Holerite ──────────────────────────────────────────── */
+
+.holerite-sheet {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 28px 32px;
+  font-size: 14px;
+  display: grid;
+  gap: 20px;
+}
+
+.holerite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.holerite-header strong {
+  display: block;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.holerite-header span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.holerite-employee {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px;
+  background: var(--base);
+  border-radius: var(--radius);
+}
+
+.holerite-employee div {
+  display: grid;
+  gap: 2px;
+}
+
+.holerite-employee b {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.holerite-employee span {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.holerite-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.holerite-table th,
+.holerite-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.holerite-table th {
+  background: var(--base);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
+.holerite-table td:last-child,
+.holerite-table th:last-child {
+  text-align: right;
+}
+
+.holerite-table tfoot td {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--ink);
+  border-top: 2px solid var(--ink);
+  border-bottom: none;
+  padding-top: 14px;
+}
+
+.holerite-jornada {
+  padding: 14px;
+  background: var(--base);
+  border-radius: var(--radius);
+}
+
+.holerite-jornada > strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 12px;
+}
+
+.holerite-jornada-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.holerite-jornada-grid div {
+  display: grid;
+  gap: 3px;
+}
+
+.holerite-jornada-grid b {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.holerite-jornada-grid span {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.holerite-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.holerite-assinatura {
+  border-top: 1px solid var(--ink);
+  padding-top: 8px;
+  text-align: center;
+}
+
+.holerite-assinatura span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #holerite-print, #holerite-print * { visibility: visible; }
+  #holerite-print {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 24px;
+    border: none;
+    box-shadow: none;
+  }
+}
+
 @media (max-width: 900px) {
   .login-page {
     grid-template-columns: 1fr;

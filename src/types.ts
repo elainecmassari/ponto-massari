@@ -25,6 +25,9 @@ export type Employee = {
   salary?: number;
   va?: number;
   vt?: number;
+  hasCommission?: boolean;
+  commissionThreshold?: number;
+  commissionRate?: number;
 };
 
 export type PunchField = "clockIn" | "lunchOut" | "lunchIn" | "clockOut";
@@ -70,4 +73,7 @@ export type EmployeeForm = {
   salary: string;
   va: string;
   vt: string;
+  hasCommission: boolean;
+  commissionThreshold: string;
+  commissionRate: string;
 };
