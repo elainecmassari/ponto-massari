@@ -951,9 +951,8 @@ function Holerite({ employees, records }) {
   const [empId, setEmpId] = useState(activeEmployees[0]?.id ?? "");
   const [month, setMonth] = useState(currentMonthIso());
   const [salesAmount, setSalesAmount] = useState("");
-  const [faltasInjust, setFaltasInjust] = useState("0");
   const [faltasJust, setFaltasJust] = useState("0");
-  const [calcMethod, setCalcMethod] = useState("30");
+  const [calcMethod, setCalcMethod] = useState("uteis");
   const [diasUteis, setDiasUteis] = useState("22");
 
   const employee = employees.find((e) => e.id === empId);
@@ -975,10 +974,12 @@ function Holerite({ employees, records }) {
   const expectedMinutes = workingDays * (employee?.expectedDailyMinutes ?? 0);
   const balanceMinutes = totalWorkedMinutes - expectedMinutes;
 
-  const faltas = Math.max(0, Number(faltasInjust) || 0);
+  const totalDiasUteis = Math.max(1, Number(diasUteis) || 22);
   const justificadas = Math.max(0, Number(faltasJust) || 0);
-  const divisor = calcMethod === "uteis" ? Math.max(1, Number(diasUteis) || 22) : 30;
-  const descontoFalta = faltas > 0 && salary > 0 ? (salary / divisor) * faltas : 0;
+  const faltasApuradas = Math.max(0, totalDiasUteis - workingDays);
+  const faltasInjust = Math.max(0, faltasApuradas - justificadas);
+  const divisor = calcMethod === "uteis" ? totalDiasUteis : 30;
+  const descontoFalta = faltasInjust > 0 && salary > 0 ? (salary / divisor) * faltasInjust : 0;
 
   const totalProventos = salary + vaTotal + vtTotal + commission;
   const totalLiquido = totalProventos - descontoFalta;
@@ -991,7 +992,7 @@ function Holerite({ employees, records }) {
   ].filter(Boolean);
 
   const descontos = [
-    descontoFalta > 0 && { label: `Falta injustificada (${faltas} dia${faltas > 1 ? "s" : ""} x ${formatBRL(salary / divisor)})`, value: descontoFalta }
+    descontoFalta > 0 && { label: `Falta injustificada (${faltasInjust} dia${faltasInjust > 1 ? "s" : ""} x ${formatBRL(salary / divisor)})`, value: descontoFalta }
   ].filter(Boolean);
 
   return (
@@ -1010,34 +1011,34 @@ function Holerite({ employees, records }) {
         </label>
 
         <label>
-          Faltas injustificadas (dias)
-          <input type="number" min="0" value={faltasInjust} onChange={(e) => setFaltasInjust(e.target.value)} placeholder="0" />
+          Total de dias uteis no mes
+          <input type="number" min="1" max="31" value={diasUteis} onChange={(e) => setDiasUteis(e.target.value)} placeholder="22" />
         </label>
         <label>
-          Faltas justificadas — atestado, etc. (dias)
-          <input type="number" min="0" value={faltasJust} onChange={(e) => setFaltasJust(e.target.value)} placeholder="0" />
+          Faltas justificadas — atestado, ferias, etc. (dias)
+          <input type="number" min="0" max={faltasApuradas} value={faltasJust} onChange={(e) => setFaltasJust(e.target.value)} placeholder="0" />
         </label>
 
+        <div style={{ gridColumn: "1/-1", background: "#f4f4f5", borderRadius: "8px", padding: "12px 16px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "8px", fontSize: "0.85rem" }}>
+          <div><span style={{ color: "var(--text-secondary)", display: "block" }}>Dias uteis</span><b>{totalDiasUteis}</b></div>
+          <div><span style={{ color: "var(--text-secondary)", display: "block" }}>Registrados</span><b>{workingDays}</b></div>
+          <div><span style={{ color: "var(--text-secondary)", display: "block" }}>Justificadas</span><b>{justificadas}</b></div>
+          <div><span style={{ color: "var(--text-secondary)", display: "block" }}>Injustificadas</span><b style={{ color: faltasInjust > 0 ? "#dc2626" : "inherit" }}>{faltasInjust}</b></div>
+        </div>
+
         <div style={{ gridColumn: "1/-1" }}>
-          <span style={{ fontWeight: 600, fontSize: "0.875rem", display: "block", marginBottom: "8px" }}>Metodo de calculo do desconto por falta</span>
+          <span style={{ fontWeight: 600, fontSize: "0.875rem", display: "block", marginBottom: "8px" }}>Metodo de calculo do desconto</span>
           <div style={{ display: "flex", gap: "24px" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "normal", cursor: "pointer" }}>
-              <input type="radio" name="calcMethod" value="30" checked={calcMethod === "30"} onChange={() => setCalcMethod("30")} />
-              ÷ 30 dias (padrao CLT)
+              <input type="radio" name="calcMethod" value="uteis" checked={calcMethod === "uteis"} onChange={() => setCalcMethod("uteis")} />
+              Salario ÷ dias uteis (recomendado)
             </label>
             <label style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "normal", cursor: "pointer" }}>
-              <input type="radio" name="calcMethod" value="uteis" checked={calcMethod === "uteis"} onChange={() => setCalcMethod("uteis")} />
-              Dias uteis do mes
+              <input type="radio" name="calcMethod" value="30" checked={calcMethod === "30"} onChange={() => setCalcMethod("30")} />
+              Salario ÷ 30 (padrao CLT)
             </label>
           </div>
         </div>
-
-        {calcMethod === "uteis" && (
-          <label>
-            Total de dias uteis no mes
-            <input type="number" min="1" max="31" value={diasUteis} onChange={(e) => setDiasUteis(e.target.value)} placeholder="22" />
-          </label>
-        )}
 
         {employee?.hasCommission && (
           <label style={{ gridColumn: "1/-1" }}>
@@ -1093,8 +1094,9 @@ function Holerite({ employees, records }) {
           <div className="holerite-jornada">
             <strong>Jornada do mes</strong>
             <div className="holerite-jornada-grid">
+              <div><b>Dias uteis no mes</b><span>{totalDiasUteis}</span></div>
               <div><b>Dias trabalhados</b><span>{workingDays}</span></div>
-              {faltas > 0 && <div><b>Faltas injustificadas</b><span className="negative">{faltas} dia{faltas > 1 ? "s" : ""}</span></div>}
+              {faltasInjust > 0 && <div><b>Faltas injustificadas</b><span className="negative">{faltasInjust} dia{faltasInjust > 1 ? "s" : ""}</span></div>}
               {justificadas > 0 && <div><b>Faltas justificadas</b><span>{justificadas} dia{justificadas > 1 ? "s" : ""}</span></div>}
               <div><b>Horas previstas</b><span>{minutesToTime(expectedMinutes)}</span></div>
               <div><b>Horas trabalhadas</b><span>{minutesToTime(totalWorkedMinutes)}</span></div>
