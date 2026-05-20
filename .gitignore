@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente — NUNCA commitar o .env com chaves reais
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+dist-ssr/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
