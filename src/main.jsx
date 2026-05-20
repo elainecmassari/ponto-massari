@@ -534,7 +534,7 @@ function Login({ email, pin, setEmail, setPin, login, users, quickLogin }) {
       <section className="panel">
         <h2>Acesso</h2>
         <label>Email<input value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-        <label>PIN<input value={pin} onChange={(e) => setPin(e.target.value)} type="password" inputMode="numeric" /></label>
+        <label>PIN / Senha<input value={pin} onChange={(e) => setPin(e.target.value)} type="password" /></label>
         <button className="primary" onClick={login}><LogIn size={18} /> Entrar</button>
       </section>
 
