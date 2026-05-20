@@ -320,7 +320,7 @@ function App() {
       });
       if (authError) throw authError;
 
-      // Restaura sessao do admin (trigger ja criou o perfil automaticamente)
+      // Restaura sessao do admin para inserir o perfil com permissao correta
       if (adminSession) {
         await supabase.auth.setSession({
           access_token: adminSession.access_token,
@@ -329,6 +329,14 @@ function App() {
       }
 
       const userId = authData.user.id;
+
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        id: userId,
+        full_name: employeeForm.name.trim(),
+        email: newEmail,
+        role: "employee"
+      }, { onConflict: "id" });
+      if (profileError) throw profileError;
 
       const { data: empData, error: empError } = await supabase.from("employees").insert({
         profile_id: userId,
