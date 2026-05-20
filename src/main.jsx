@@ -133,8 +133,9 @@ function App() {
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
 
   const isAdmin = currentUser?.role === "admin";
+  const isAccountant = currentUser?.role === "accountant";
   const currentEmployee = currentUser?.employeeId ? employees.find((e) => e.id === currentUser.employeeId) : null;
-  const reportEmployee = isAdmin ? employeeFilter : currentEmployee?.id ?? "all";
+  const reportEmployee = isAdmin ? employeeFilter : isAccountant ? "all" : currentEmployee?.id ?? "all";
   const rows = useMemo(() => buildReportRows(records, employees, month, reportEmployee), [records, employees, month, reportEmployee]);
   const monthRows = useMemo(() => buildReportRows(records, employees, currentMonthIso(), "all"), [records, employees]);
 
@@ -184,7 +185,7 @@ function App() {
       setEmployees(empList.map(mapEmployee));
       setRecords((recs ?? []).map(mapRecord));
       if (empList.length > 0) setAdjustment((prev) => prev.employeeId === "" ? emptyAdjustment(empList[0].id) : prev);
-      setTab(profile.role === "admin" ? "Painel" : "Ponto");
+      setTab(profile.role === "admin" ? "Painel" : profile.role === "accountant" ? "Relatorios" : "Ponto");
     } catch (err) {
       console.error("Erro ao carregar dados:", err);
       try { await supabase.auth.signOut(); } catch {}
@@ -201,7 +202,7 @@ function App() {
       const found = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.pin === pin.trim());
       if (!found) { window.alert("Confira o email e o PIN."); return; }
       setCurrentUser(found);
-      setTab(found.role === "admin" ? "Painel" : "Ponto");
+      setTab(found.role === "admin" ? "Painel" : found.role === "accountant" ? "Relatorios" : "Ponto");
       return;
     }
 
@@ -546,7 +547,7 @@ function App() {
     );
   }
 
-  const tabs = isAdmin ? ["Painel", "Calendario", "Relatorios", "Holerite", "Funcionarios", "Ajustes"] : ["Ponto", "Calendario", "Meu mes"];
+  const tabs = isAdmin ? ["Painel", "Calendario", "Relatorios", "Holerite", "Funcionarios", "Ajustes"] : isAccountant ? ["Relatorios", "Holerite"] : ["Ponto", "Calendario", "Meu mes"];
 
   return (
     <div className="app-shell">
@@ -555,11 +556,11 @@ function App() {
           <img src={brand.logo} alt={brand.company} />
           <div>
             <h1>Ponto Massari</h1>
-            <p>{isAdmin ? "Gestao interna" : `Solicitado pela ${brand.accounting}`}</p>
+            <p>{isAdmin ? "Gestao interna" : isAccountant ? "Acesso contabil" : `Solicitado pela ${brand.accounting}`}</p>
           </div>
         </div>
         <div className="topbar-meta">
-          <span>{isAdmin ? "Administrador" : currentEmployee?.name}</span>
+          <span>{isAdmin ? "Administrador" : isAccountant ? brand.accounting : currentEmployee?.name}</span>
           <small>{isConfigured ? brand.accounting : "Modo demo"}</small>
         </div>
         <button className="icon-button" onClick={logout} aria-label="Sair">
@@ -587,7 +588,7 @@ function App() {
             employeeFilter={employeeFilter} setEmployeeFilter={setEmployeeFilter}
             csv={csv} generateCsv={() => setCsv(reportToCsv(rows))} showEmployeeFilter />
         )}
-        {isAdmin && tab === "Holerite" && <Holerite employees={employees} records={records} />}
+        {(isAdmin || isAccountant) && tab === "Holerite" && <Holerite employees={employees} records={records} />}
         {isAdmin && tab === "Funcionarios" && (
           <Employees employees={employees} users={users} form={employeeForm} setForm={setEmployeeForm}
             saveEmployee={saveEmployee} saving={saving} onToggleStatus={toggleEmployeeStatus} onDelete={deleteEmployee}
