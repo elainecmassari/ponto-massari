@@ -614,50 +614,117 @@ function App() {
 function Login({ email, pin, setEmail, setPin, login, users, quickLogin }) {
   const motivation = getDailyMotivation(todayIso());
   return (
-    <main className="login-page">
-      <section className="login-hero">
-        <img className="login-logo" src={brand.logo} alt={brand.company} />
-        <div>
-          <h1>Ponto Massari</h1>
-          <p>Controle de entrada, saida e intervalo de almoco.</p>
-          <span className="accounting-badge">
-            <Building2 size={15} /> Solicitado pela {brand.accounting}
-          </span>
+    <div className="login-split">
+      {/* ── Left panel ─────────────────────────────────────── */}
+      <div className="login-left">
+        <div className="login-logo-wrap">
+          <img src={brand.logo} alt={brand.company} />
         </div>
-      </section>
 
-      <section className="motivation-strip">
-        <CalendarCheck size={20} />
-        <div>
-          <strong>{motivation.title}</strong>
-          <span>{motivation.text}</span>
+        <div className="login-tagline">
+          <h1>Controle de ponto simples e preciso.</h1>
+          <p>Registros em tempo real, relatorios automaticos e integracao com a contabilidade.</p>
         </div>
-      </section>
 
-      <section className="panel">
-        <h2>Acesso</h2>
-        <label>Email<input value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-        <label>PIN / Senha<input value={pin} onChange={(e) => setPin(e.target.value)} type="password" /></label>
-        <button className="primary" onClick={login}><LogIn size={18} /> Entrar</button>
-      </section>
+        <ul className="login-features">
+          <li className="login-feature-item">
+            <span className="login-feature-icon"><Fingerprint size={16} /></span>
+            Registro de ponto com um clique
+          </li>
+          <li className="login-feature-item">
+            <span className="login-feature-icon"><CalendarDays size={16} /></span>
+            Holerites gerados automaticamente
+          </li>
+          <li className="login-feature-item">
+            <span className="login-feature-icon"><ShieldCheck size={16} /></span>
+            Dados seguros com controle por perfil
+          </li>
+          <li className="login-feature-item">
+            <span className="login-feature-icon"><Building2 size={16} /></span>
+            Acompanhamento pela contabilidade
+          </li>
+        </ul>
 
-      {users.length > 0 && (
-        <section>
-          <h2>Perfis de teste</h2>
-          <div className="quick-grid">
-            {users.slice(0, 3).map((user) => (
-              <button className="quick-card" key={user.id} onClick={() => quickLogin(user)}>
-                {user.role === "admin" ? <ShieldCheck size={21} /> : <Users size={21} />}
-                <span>
-                  <strong>{user.name}</strong>
-                  <small>{user.email} | PIN {user.pin}</small>
-                </span>
-              </button>
-            ))}
+        <div className="login-divider" />
+
+        <div className="login-stats-row">
+          <div className="login-stat-item">
+            <span className="login-stat-num">100%</span>
+            <span className="login-stat-lbl">Online</span>
           </div>
-        </section>
-      )}
-    </main>
+          <div className="login-stat-item">
+            <span className="login-stat-num">CLT</span>
+            <span className="login-stat-lbl">Conforme</span>
+          </div>
+          <div className="login-stat-item">
+            <span className="login-stat-num">24h</span>
+            <span className="login-stat-lbl">Disponivel</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Right panel ────────────────────────────────────── */}
+      <div className="login-right">
+        <div className="login-card">
+          <div className="login-card-header">
+            <h2>Bem-vindo de volta</h2>
+            <p>Acesse com seu e-mail e senha ou PIN</p>
+          </div>
+
+          <label>
+            E-mail
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com.br"
+              type="email"
+            />
+          </label>
+          <label>
+            Senha / PIN
+            <input
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              type="password"
+              placeholder="••••••"
+            />
+          </label>
+
+          <button className="primary" onClick={login}>
+            <LogIn size={18} /> Entrar
+          </button>
+
+          <div className="login-accounting">
+            <Building2 size={13} style={{ color: "var(--virtus)", flexShrink: 0 }} />
+            <span>Solicitado pela {brand.accounting}</span>
+          </div>
+        </div>
+
+        {users.length > 0 && (
+          <div style={{ width: "100%", maxWidth: 420 }}>
+            <p className="login-demo-label">Perfis de demonstracao</p>
+            <div className="quick-grid" style={{ marginTop: 8 }}>
+              {users.slice(0, 3).map((user) => (
+                <button className="quick-card" key={user.id} onClick={() => quickLogin(user)}>
+                  {user.role === "admin" ? <ShieldCheck size={20} /> : <Users size={20} />}
+                  <span>
+                    <strong>{user.name}</strong>
+                    <small>{user.email} · PIN {user.pin}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ textAlign: "center", marginTop: 4 }}>
+          <small style={{ fontSize: 11, color: "var(--muted)" }}>
+            <CalendarCheck size={12} style={{ verticalAlign: "middle", marginRight: 4 }} />
+            {motivation.title} — {motivation.text}
+          </small>
+        </div>
+      </div>
+    </div>
   );
 }
 
