@@ -246,7 +246,45 @@ button:disabled{cursor:not-allowed;opacity:.6;}
 #toast.error{background:var(--danger);}
 #toast.warn{background:#d97706;}
 
-@media(max-width:680px){.topbar{padding:0 16px;}.virtus-bar,.navbar{padding-left:16px;padding-right:16px;}.main{padding:16px;}}
+/* ── HOLERITE ── */
+.holerite-wrap{max-width:680px;margin:0 auto;}
+.holerite-doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-top:16px;}
+.holerite-header{background:var(--ink);color:#fff;padding:24px 28px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+.holerite-brand{font-size:20px;font-weight:900;letter-spacing:-.3px;}
+.holerite-brand span{color:var(--orange);}
+.holerite-brand-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:3px;}
+.holerite-title{text-align:right;}
+.holerite-title h2{font-size:16px;font-weight:800;color:#fff;}
+.holerite-title p{font-size:12px;color:rgba(255,255,255,.45);margin-top:3px;}
+.holerite-emp{background:var(--orange);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.holerite-emp-name{font-size:16px;font-weight:900;color:#fff;}
+.holerite-emp-role{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;}
+.holerite-emp-admit{font-size:12px;color:rgba(255,255,255,.75);text-align:right;}
+.holerite-body{padding:24px 28px;}
+.holerite-section{margin-bottom:20px;}
+.holerite-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+.holerite-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.holerite-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--paper);border-radius:var(--radius-sm);font-size:13px;}
+.holerite-item b{color:var(--ink);font-weight:700;}
+.holerite-item span{color:var(--muted);}
+.holerite-item.highlight{background:var(--orange-soft);}
+.holerite-item.highlight b{color:var(--orange-dark);}
+.holerite-item.negative{background:var(--danger-soft);}
+.holerite-item.negative b{color:var(--danger);}
+.holerite-item.commission{background:var(--virtus-soft);}
+.holerite-item.commission b{color:var(--virtus-dark);}
+.holerite-total{background:var(--ink);border-radius:var(--radius-sm);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+.holerite-total span{font-size:13px;color:rgba(255,255,255,.5);font-weight:700;}
+.holerite-total strong{font-size:24px;font-weight:900;color:#fff;}
+.holerite-absences{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.hab-item{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px;text-align:center;}
+.hab-val{font-size:20px;font-weight:900;color:var(--ink);}
+.hab-val.red{color:var(--danger);}
+.hab-lbl{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;}
+.holerite-footer{background:var(--virtus-soft);border-top:1px solid rgba(13,148,136,.15);padding:14px 28px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--virtus-dark);font-weight:700;}
+.holerite-footer svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+
+@media(max-width:680px){.topbar{padding:0 16px;}.virtus-bar,.navbar{padding-left:16px;padding-right:16px;}.main{padding:16px;}.holerite-absences{grid-template-columns:repeat(2,1fr);}.holerite-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -322,6 +360,7 @@ button:disabled{cursor:not-allowed;opacity:.6;}
       <div class="metrics-grid" style="grid-template-columns:1fr 1fr" id="punch-metrics"></div>
     </div>
     <div class="view" id="view-Relatorios"><div id="report-content"></div></div>
+    <div class="view" id="view-Holerite"><div id="holerite-content"></div></div>
     <div class="view" id="view-Calendario"><div id="cal-content"></div></div>
     <div class="view" id="view-MeuMes"><div id="mymonth-content"></div></div>
     <div class="view" id="view-Funcionarios">
@@ -560,13 +599,14 @@ const NAV={
   Relatorios:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>',
   Calendario:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
   Funcionarios:'<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  Holerite:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/><polyline points="9 7 9 3 12 3"/></svg>',
   Ajustes:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>',
   Ponto:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   MeuMes:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
 };
-const LABELS={Painel:'Painel',Relatorios:'Relatórios',Calendario:'Calendário',Funcionarios:'Funcionários',Ajustes:'Ajustes',Ponto:'Bater Ponto',MeuMes:'Meu Mês'};
+const LABELS={Painel:'Painel',Relatorios:'Relatórios',Calendario:'Calendário',Holerite:'Holerite',Funcionarios:'Funcionários',Ajustes:'Ajustes',Ponto:'Bater Ponto',MeuMes:'Meu Mês'};
 function renderNavbar(){
-  const tabs=currentUser?.role==='admin'?['Painel','Relatorios','Calendario','Funcionarios','Ajustes']:['Ponto','MeuMes'];
+  const tabs=currentUser?.role==='admin'?['Painel','Relatorios','Calendario','Holerite','Funcionarios','Ajustes']:['Ponto','MeuMes'];
   document.getElementById('navbar').innerHTML=tabs.map(t=>`<div class="nav-item${currentTab===t?' active':''}" onclick="switchTab('${t}')">${NAV[t]||''} ${LABELS[t]||t}</div>`).join('');
 }
 function switchTab(tab){
@@ -580,6 +620,7 @@ function renderCurrentTab(){
   else if(currentTab==='Ponto')renderPunch();
   else if(currentTab==='Relatorios')renderReport('report-content',true);
   else if(currentTab==='Calendario')renderCalendar();
+  else if(currentTab==='Holerite')renderHolerite();
   else if(currentTab==='MeuMes')renderReport('mymonth-content',false);
   else if(currentTab==='Funcionarios')renderEmployees();
   else if(currentTab==='Ajustes')renderAdjustments();
@@ -889,6 +930,156 @@ function renderAdjList(){
 function adjFromRec(eid,date){
   adjEmpId=eid;document.getElementById('adj-date').value=date;
   renderAdjustments();loadAdjustment();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══ HOLERITE ════════════════════════════════
+let holEmpId='';
+let holMonth=currentMonthIso();
+let holFaltasJust='0';
+let holCalcMethod='uteis';
+let holDiasUteis='22';
+
+function renderHolerite(){
+  if(!holEmpId && employees.length>0) holEmpId=employees[0].id;
+  const empOpts=employees.map(e=>e.id);
+  document.getElementById('holerite-content').innerHTML=`
+    <div class="holerite-wrap">
+      <div class="card">
+        <div class="card-title">Configurar holerite</div>
+        <div class="form-grid">
+          <div class="f-group"><label class="f-label">Funcionário</label>
+            <select class="f-input" onchange="holEmpId=this.value;renderHolerite()">
+              ${employees.map(e=>`<option value="${e.id}" ${holEmpId===e.id?'selected':''}>${e.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="f-group"><label class="f-label">Mês de referência</label>
+            <input class="f-input" type="month" value="${holMonth}" oninput="holMonth=this.value;renderHolerite()">
+          </div>
+          <div class="f-group"><label class="f-label">Dias úteis no mês</label>
+            <input class="f-input" type="number" value="${holDiasUteis}" min="1" max="31" oninput="holDiasUteis=this.value;renderHolerite()">
+          </div>
+          <div class="f-group"><label class="f-label">Faltas justificadas</label>
+            <input class="f-input" type="number" value="${holFaltasJust}" min="0" oninput="holFaltasJust=this.value;renderHolerite()">
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Método de cálculo de desconto</label>
+          <div class="choice-row">
+            <button class="choice-btn${holCalcMethod==='uteis'?' active':''}" onclick="holCalcMethod='uteis';renderHolerite()">Dias úteis</button>
+            <button class="choice-btn${holCalcMethod==='30'?' active':''}" onclick="holCalcMethod='30';renderHolerite()">CLT (÷30)</button>
+          </div>
+        </div>
+      </div>
+      <div id="holerite-doc"></div>
+    </div>`;
+  buildHoleriteDoc();
+}
+
+function buildHoleriteDoc(){
+  const emp=employees.find(e=>e.id===holEmpId);
+  if(!emp){document.getElementById('holerite-doc').innerHTML=emptyState('Selecione um funcionário.');return;}
+  const monthRecs=records.filter(r=>r.employee_id===emp.id&&r.date.startsWith(holMonth));
+  const workingDays=monthRecs.filter(r=>r.clock_in).length;
+  const totalDiasUteis=Math.max(1,Number(holDiasUteis)||22);
+  const justificadas=Math.max(0,Number(holFaltasJust)||0);
+  const faltasApuradas=Math.max(0,totalDiasUteis-workingDays);
+  const faltasInjust=Math.max(0,faltasApuradas-justificadas);
+  const divisor=holCalcMethod==='uteis'?totalDiasUteis:30;
+  const salary=Number(emp.salary||0);
+  const va=Number(emp.va||0);
+  const vt=Number(emp.vt||0);
+  const vaTotal=workingDays>0?va*(workingDays/totalDiasUteis):0;
+  const vtTotal=workingDays>0?vt*(workingDays/totalDiasUteis):0;
+  const totalWorkedMin=monthRecs.reduce((s,r)=>s+workedMin(r),0);
+  const expectedMin=totalDiasUteis*emp.expected_daily_minutes;
+  const balanceMin=monthRecs.filter(r=>r.clock_in).reduce((s,r)=>s+workedMin(r),0)-(workingDays*emp.expected_daily_minutes);
+  // comissão
+  let commission=0;
+  if(emp.has_commission){
+    const meta=Number(emp.commission_threshold||80000);
+    const rate=Number(emp.commission_rate||2)/100;
+    // simplificado — exibe campo para informar vendas
+    commission=0; // será editável futuramente
+  }
+  const descontoFalta=faltasInjust>0&&salary>0?(salary/divisor)*faltasInjust:0;
+  const totalProventos=salary+vaTotal+vtTotal+commission;
+  const totalLiquido=totalProventos-descontoFalta;
+
+  document.getElementById('holerite-doc').innerHTML=`
+    <div class="holerite-doc">
+      <div class="holerite-header">
+        <div>
+          <div class="holerite-brand">MASSARI <span>●</span></div>
+          <div class="holerite-brand-sub">Massari Ferramentas</div>
+        </div>
+        <div class="holerite-title">
+          <h2>Holerite</h2>
+          <p>${monthLabel(holMonth)}</p>
+        </div>
+      </div>
+      <div class="holerite-emp">
+        <div>
+          <div class="holerite-emp-name">${emp.name}</div>
+          <div class="holerite-emp-role">${emp.position} · ${emp.department}</div>
+        </div>
+        <div class="holerite-emp-admit">
+          Admissão: ${formatDate(emp.admission_date)}<br>
+          Jornada: ${minToTime(emp.expected_daily_minutes)}/dia
+        </div>
+      </div>
+      <div class="holerite-body">
+
+        <div class="holerite-section">
+          <div class="holerite-section-title">Apuração de frequência</div>
+          <div class="holerite-absences">
+            <div class="hab-item"><div class="hab-val">${totalDiasUteis}</div><div class="hab-lbl">Dias úteis</div></div>
+            <div class="hab-item"><div class="hab-val">${workingDays}</div><div class="hab-lbl">Registrados</div></div>
+            <div class="hab-item"><div class="hab-val">${justificadas}</div><div class="hab-lbl">Just. informadas</div></div>
+            <div class="hab-item"><div class="hab-val${faltasInjust>0?' red':''}">${faltasInjust}</div><div class="hab-lbl">Injustificadas</div></div>
+          </div>
+        </div>
+
+        <div class="holerite-section">
+          <div class="holerite-section-title">Resumo da jornada</div>
+          <div class="holerite-grid">
+            <div class="holerite-item"><span>Horas previstas no mês</span><b>${minToTime(expectedMin)}</b></div>
+            <div class="holerite-item"><span>Horas trabalhadas</span><b>${minToTime(totalWorkedMin)}</b></div>
+            <div class="holerite-item"><span>Saldo geral</span><b style="color:${totalWorkedMin-expectedMin>=0?'var(--virtus)':'var(--danger)'}">${totalWorkedMin-expectedMin>=0?'+':''}${minToTime(totalWorkedMin-expectedMin)}</b></div>
+            <div class="holerite-item"><span>Saldo dias trabalhados</span><b style="color:${balanceMin>=0?'var(--virtus)':'var(--danger)'}">${balanceMin>=0?'+':''}${minToTime(balanceMin)}</b></div>
+          </div>
+        </div>
+
+        <div class="holerite-section">
+          <div class="holerite-section-title">Proventos</div>
+          <div class="holerite-grid">
+            <div class="holerite-item highlight"><span>Salário base</span><b>${fmtBRL(salary)}</b></div>
+            <div class="holerite-item"><span>Vale Alimentação (${workingDays}d)</span><b>${fmtBRL(vaTotal)}</b></div>
+            <div class="holerite-item"><span>Vale Transporte (${workingDays}d)</span><b>${fmtBRL(vtTotal)}</b></div>
+            ${emp.has_commission?`<div class="holerite-item commission"><span>Comissão (${emp.commission_rate}%)</span><b>${fmtBRL(commission)}</b></div>`:''}
+          </div>
+        </div>
+
+        ${descontoFalta>0?`
+        <div class="holerite-section">
+          <div class="holerite-section-title">Descontos</div>
+          <div class="holerite-grid">
+            <div class="holerite-item negative"><span>Faltas injustificadas (${faltasInjust}d ÷${divisor})</span><b>- ${fmtBRL(descontoFalta)}</b></div>
+          </div>
+        </div>`:''}
+
+        <div class="holerite-total">
+          <span>TOTAL LÍQUIDO</span>
+          <strong>${fmtBRL(totalLiquido)}</strong>
+        </div>
+      </div>
+      <div class="holerite-footer">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Documento gerado pelo Ponto Massari · Solicitado pela Virtus Contábil
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+    </div>`;
 }
 
 // ═══ START ═══════════════════════════════════
