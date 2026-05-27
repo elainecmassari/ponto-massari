@@ -419,6 +419,10 @@ button:disabled{cursor:not-allowed;opacity:.6;}
       <div style="font-size:13px;color:var(--muted);margin-bottom:32px">Ponto digital</div>
       <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" type="email" id="login-email" value="elaine@guiasmassari.com.br" autocomplete="off"></div>
       <div class="auth-field"><label class="auth-label">PIN de acesso</label><input class="auth-input" type="password" id="login-pin" value="1612" maxlength="8" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <input type="checkbox" id="remember-me" style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer">
+        <label for="remember-me" style="font-size:13px;color:var(--muted);cursor:pointer;font-weight:600">Lembrar meu login neste dispositivo</label>
+      </div>
       <button class="btn-login" onclick="doLogin()">Entrar</button>
       <div class="db-note" id="db-note"></div>
     </div>
@@ -473,7 +477,13 @@ button:disabled{cursor:not-allowed;opacity:.6;}
     <div class="view" id="view-Calendario"><div id="cal-content"></div></div>
     <div class="view" id="view-MeuMes"><div id="mymonth-content"></div></div>
     <div class="view" id="view-Funcionarios">
-      <div class="card">
+      <div style="margin-bottom:16px">
+        <button class="btn btn-primary btn-sm" onclick="toggleNovoFunc()" id="btn-novo-func">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo funcionário
+        </button>
+      </div>
+      <div class="card" id="form-novo-func" style="display:none">
         <div class="card-title">Novo funcionário</div>
         <div class="form-grid">
           <div class="f-group"><label class="f-label">Nome completo *</label><input class="f-input" id="ef-name" placeholder="Ex: Maria Silva"></div>
@@ -752,6 +762,24 @@ async function init(){
   const today=todayIso();
   const dm=getDayMessage(today);
   document.getElementById('auth-motivation').textContent=dm.msg;
+
+  // Verificar login salvo
+  try{
+    const saved=localStorage.getItem('pm_saved_login');
+    if(saved){
+      const{email,pin,userId}=JSON.parse(saved);
+      const user=users.find(u=>u.id===userId&&u.email===email&&u.pin===pin);
+      if(user){loginAs(user);return;}
+      else{localStorage.removeItem('pm_saved_login');}
+    }
+  }catch(e){}
+
+  // Preencher campos se tiver email salvo
+  try{
+    const lastEmail=localStorage.getItem('pm_last_email');
+    if(lastEmail){document.getElementById('login-email').value=lastEmail;}
+  }catch(e){}
+
   renderQuickList();
   document.getElementById('auth-screen').style.display='flex';
 }
@@ -774,6 +802,15 @@ function doLogin(){
   const pin=document.getElementById('login-pin').value.trim();
   const user=users.find(u=>u.email.toLowerCase()===email&&u.pin===pin);
   if(!user){toast('Email ou PIN incorretos','error');return;}
+  // Salvar login se marcou lembrar
+  try{
+    localStorage.setItem('pm_last_email',email);
+    if(document.getElementById('remember-me')?.checked){
+      localStorage.setItem('pm_saved_login',JSON.stringify({email,pin,userId:user.id}));
+    }else{
+      localStorage.removeItem('pm_saved_login');
+    }
+  }catch(e){}
   loginAs(user);
 }
 function quickLogin(uid){const u=users.find(x=>x.id===uid);if(u)loginAs(u);}
@@ -794,6 +831,7 @@ function loginAs(user){
 }
 function doLogout(){
   currentUser=null;
+  try{localStorage.removeItem('pm_saved_login');}catch(e){}
   document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app-screen').style.display='none';
   if(clockInterval){clearInterval(clockInterval);clockInterval=null;}
@@ -826,10 +864,10 @@ function renderCurrentTab(){
   if(currentTab==='Painel')renderDashboard();
   else if(currentTab==='Alertas')renderAlertas();
   else if(currentTab==='Ponto')renderPunch();
-  else if(currentTab==='Relatorios')renderReport('report-content',true);
+  else if(currentTab==='Relatorios'){reportCsv='';renderReport('report-content',true);}
   else if(currentTab==='Calendario')renderCalendar();
   else if(currentTab==='Holerite')renderHolerite();
-  else if(currentTab==='MeuMes')renderReport('mymonth-content',false);
+  else if(currentTab==='MeuMes'){reportCsv='';renderReport('mymonth-content',false);}
   else if(currentTab==='Funcionarios')renderEmployees();
   else if(currentTab==='Ajustes')renderAdjustments();
 }
@@ -1338,6 +1376,8 @@ async function saveEmployee(){
   }
   ['ef-name','ef-doc','ef-pos','ef-dep'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ef-hrs').value='8';
+  document.getElementById('form-novo-func').style.display='none';
+  document.getElementById('btn-novo-func').innerHTML='<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo funcionário';
   toast(`✓ ${name} cadastrado · PIN: ${pin}`,'success');
   renderEmployees();
 }
@@ -1459,6 +1499,16 @@ async function savePin(){
   currentUser={...currentUser,pin:novo};
   closePinModal();
   toast('✓ PIN alterado com sucesso!','success');
+}
+
+function toggleNovoFunc(){
+  const form=document.getElementById('form-novo-func');
+  const btn=document.getElementById('btn-novo-func');
+  const aberto=form.style.display!=='none';
+  form.style.display=aberto?'none':'block';
+  btn.innerHTML=aberto
+    ?'<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo funcionário'
+    :'✕ Fechar formulário';
 }
 
 // ═══ MODAL EDITAR FUNCIONÁRIO ═══════════════
