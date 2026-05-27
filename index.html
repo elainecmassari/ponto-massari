@@ -116,17 +116,103 @@ button:disabled{cursor:not-allowed;opacity:.6;}
 /* ── CLOCK PANEL ── */
 .clock-panel{background:var(--ink);border-radius:var(--radius);padding:32px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;}
 .clock-panel::before{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.2) 0%,transparent 70%);}
-.clock-date{font-size:13px;color:rgba(255,255,255,.4);font-weight:600;margin-bottom:6px;}
-.clock-time{font-family:'DM Mono',monospace;font-size:clamp(48px,8vw,72px);font-weight:500;color:#fff;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums;}
-.clock-next{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;}
+.clock-panel::after{content:'';position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,.15) 0%,transparent 70%);}
+.clock-date{font-size:13px;color:rgba(255,255,255,.4);font-weight:600;margin-bottom:6px;position:relative;z-index:1;}
+.clock-time{font-family:'DM Mono',monospace;font-size:clamp(48px,8vw,80px);font-weight:500;color:#fff;line-height:1;margin-bottom:6px;font-variant-numeric:tabular-nums;position:relative;z-index:1;}
+.clock-next{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;position:relative;z-index:1;}
 .clock-next strong{color:var(--orange);font-weight:800;}
 .clock-next.done strong{color:#5eead4;}
-.btn-punch{background:var(--orange);color:#fff;height:52px;border-radius:var(--radius-sm);border:none;font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 28px;cursor:pointer;transition:background .15s,transform .1s;box-shadow:0 8px 20px rgba(249,115,22,.3);}
+.btn-punch{background:var(--orange);color:#fff;height:54px;border-radius:var(--radius-sm);border:none;font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 32px;cursor:pointer;transition:background .15s,transform .1s;box-shadow:0 8px 24px rgba(249,115,22,.4);position:relative;z-index:1;}
 .btn-punch:hover{background:var(--orange-dark);}
 .btn-punch:active{transform:scale(.97);}
 .btn-punch.done{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);cursor:default;box-shadow:none;}
 .btn-punch.blocked{background:rgba(255,255,255,.06);color:rgba(255,255,255,.3);cursor:default;box-shadow:none;}
 .btn-punch svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+
+/* ── PUNCH PROGRESS ── */
+.punch-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.pp-step{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:14px;text-align:center;transition:all .2s;}
+.pp-step.done{background:var(--virtus-soft);border-color:var(--virtus);}
+.pp-step.active{background:var(--orange-soft);border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1);}
+.pp-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:13px;font-weight:800;color:var(--muted);}
+.pp-step.done .pp-dot{background:var(--virtus);border-color:var(--virtus);color:#fff;}
+.pp-step.active .pp-dot{background:var(--orange);border-color:var(--orange);color:#fff;animation:pulse-dot 1.5s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.4);}50%{box-shadow:0 0 0 8px rgba(249,115,22,0);}}
+.pp-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.pp-step.done .pp-lbl{color:var(--virtus-dark);}
+.pp-step.active .pp-lbl{color:var(--orange-dark);}
+.pp-time{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;color:var(--ink);margin-top:4px;}
+.pp-step.done .pp-time{color:var(--virtus-dark);}
+
+/* ── EMP STATS ── */
+.emp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.es-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow-sm);}
+.es-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--ink);line-height:1;}
+.es-val.pos{color:var(--virtus);}
+.es-val.neg{color:var(--danger);}
+.es-lbl{font-size:11px;color:var(--muted);font-weight:600;margin-top:4px;}
+
+/* ── SALES CARD ── */
+.sales-card{border-radius:var(--radius);padding:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.sales-card.c1{background:linear-gradient(135deg,#7c3aed,#a855f7);}
+.sales-card.c2{background:linear-gradient(135deg,#0891b2,#06b6d4);}
+.sales-card.c3{background:linear-gradient(135deg,#059669,#10b981);}
+.sales-card.c4{background:linear-gradient(135deg,#d97706,#f59e0b);}
+.sales-card.c5{background:linear-gradient(135deg,#dc2626,#f87171);}
+.sales-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1);}
+.sales-card::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08);}
+.sc-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;position:relative;z-index:1;}
+.sc-value{font-size:28px;font-weight:900;color:#fff;line-height:1;position:relative;z-index:1;}
+.sc-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;position:relative;z-index:1;}
+
+/* ── MOTIVATION CARD ── */
+.motiv-card{border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.motiv-card.m1{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;}
+.motiv-card.m2{background:linear-gradient(135deg,#e0f2fe,#bae6fd);border:1px solid #0891b2;}
+.motiv-card.m3{background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:1px solid #059669;}
+.motiv-card.m4{background:linear-gradient(135deg,#fce7f3,#fbcfe8);border:1px solid #db2777;}
+.motiv-card.m5{background:linear-gradient(135deg,#ede9fe,#ddd6fe);border:1px solid #7c3aed;}
+.motiv-emoji{font-size:32px;flex-shrink:0;position:relative;z-index:1;}
+.motiv-text{position:relative;z-index:1;}
+.motiv-text strong{font-size:14px;font-weight:800;color:var(--ink);display:block;margin-bottom:3px;}
+.motiv-text span{font-size:12px;color:var(--ink-soft);}
+
+/* ── SALES INPUT ── */
+.sales-input-wrap{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;}
+.sales-input-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.sales-input-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.sales-input-row{display:flex;gap:10px;align-items:center;}
+.sales-input-field{flex:1;height:48px;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:0 14px;font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink);background:var(--surface);outline:none;transition:border-color .15s;}
+.sales-input-field:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1);}
+.btn-save-sales{height:48px;background:var(--orange);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:800;padding:0 20px;cursor:pointer;transition:background .15s;white-space:nowrap;}
+.btn-save-sales:hover{background:var(--orange-dark);}
+
+/* ── LEMBRETE VENDAS ── */
+.sales-reminder{border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;background:linear-gradient(135deg,#fdf4ff,#fae8ff);border:1.5px solid #e879f9;position:relative;overflow:hidden;}
+.sales-reminder::before{content:'💜';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:36px;opacity:.15;}
+.sr-title{font-size:14px;font-weight:800;color:#7e22ce;margin-bottom:4px;}
+.sr-msg{font-size:13px;color:#6b21a8;line-height:1.6;}
+.sr-tip{font-size:11px;color:#9333ea;font-weight:700;margin-top:8px;padding:6px 10px;background:rgba(147,51,234,.1);border-radius:6px;display:inline-block;}
+.chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.chart-title{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:14px;}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:80px;}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;background:var(--orange);transition:height .3s ease;min-height:4px;}
+.chart-bar.today{background:var(--virtus);}
+.chart-bar-lbl{font-size:10px;color:var(--muted);font-weight:600;white-space:nowrap;}
+.chart-bar-val{font-size:10px;color:var(--ink);font-weight:700;}
+.hist-list{display:flex;flex-direction:column;gap:6px;}
+.hist-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.hist-item.ok{border-left:3px solid var(--virtus);}
+.hist-item.pend{border-left:3px solid var(--amber,#f59e0b);}
+.hist-date{font-size:12px;font-weight:700;color:var(--ink);}
+.hist-day{font-size:11px;color:var(--muted);}
+.hist-hours{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--ink);}
+.hist-bal{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;}
+.hist-bal.pos{color:var(--virtus);}
+.hist-bal.neg{color:var(--danger);}
+
+@media(max-width:520px){.punch-progress{grid-template-columns:repeat(2,1fr);}.emp-stats{grid-template-columns:1fr 1fr;}}
 
 /* ── TIMELINE ── */
 .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
@@ -334,8 +420,6 @@ button:disabled{cursor:not-allowed;opacity:.6;}
       <div class="auth-field"><label class="auth-label">Email</label><input class="auth-input" type="email" id="login-email" value="elaine@guiasmassari.com.br" autocomplete="off"></div>
       <div class="auth-field"><label class="auth-label">PIN de acesso</label><input class="auth-input" type="password" id="login-pin" value="1612" maxlength="8" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="btn-login" onclick="doLogin()">Entrar</button>
-      <div class="auth-divider">acesso rápido</div>
-      <div id="quick-list"></div>
       <div class="db-note" id="db-note"></div>
     </div>
   </div>
@@ -374,8 +458,12 @@ button:disabled{cursor:not-allowed;opacity:.6;}
     <div class="view" id="view-Ponto">
       <div id="punch-motivation"></div>
       <div class="clock-panel" id="punch-panel"></div>
-      <div class="timeline" id="punch-timeline"></div>
-      <div class="metrics-grid" style="grid-template-columns:1fr 1fr" id="punch-metrics"></div>
+      <div class="punch-progress" id="punch-progress"></div>
+      <div id="sales-input-area"></div>
+      <div class="emp-stats" id="punch-stats"></div>
+      <div id="sales-chart-area"></div>
+      <div class="section-hdr"><div class="section-title">Últimos registros</div></div>
+      <div class="hist-list" id="punch-history"></div>
     </div>
     <div class="view" id="view-Relatorios"><div id="report-content"></div></div>
     <div class="view" id="view-Holerite"><div id="holerite-content"></div></div>
@@ -579,10 +667,16 @@ function dayStatus(r){
   return'OK';
 }
 function buildRows(recs,emps,monthIso,empId='all'){
+  const today=todayIso();
   const daysInMonth=new Date(monthIso.split('-')[0],monthIso.split('-')[1],0).getDate();
   const allDays=Array.from({length:daysInMonth},(_,i)=>`${monthIso}-${pad(i+1)}`);
   const filteredEmps=empId==='all'?emps:emps.filter(e=>e.id===empId);
-  return filteredEmps.flatMap(e=>allDays.filter(d=>!isWeekend(d)&&!getFeriado(d)&&(!e.start_date||d>=e.start_date)).map(d=>{
+  return filteredEmps.flatMap(e=>allDays.filter(d=>{
+    if(isWeekend(d)||getFeriado(d))return false;
+    if(e.start_date&&d<e.start_date)return false;
+    if(d>today)return false; // não mostrar dias futuros
+    return true;
+  }).map(d=>{
     const r=recs.find(x=>x.employee_id===e.id&&x.date===d)||{employee_id:e.id,date:d};
     const wm=workedMin(r),lm=lunchMin(r);
     return{record:r,employee:e,workedMinutes:wm,lunchMinutes:lm,expectedMinutes:e.expected_daily_minutes,balanceMinutes:r.clock_in?wm-e.expected_daily_minutes:0,missingMarks:missingMarks(r),hasRecord:!!r.clock_in};
@@ -761,10 +855,218 @@ function recCard(r,emp){
     ${r.notes?`<div style="margin-top:8px;font-size:12px;color:var(--muted)">${r.notes}</div>`:''}
   </div>`;}
 
+// ═══ MOTIVAÇÃO COLORIDA ══════════════════════
+const MOTIV_DATA=[
+  {emoji:'🚀',msg:'Organização no início do dia deixa o trabalho mais leve.',sub:'Bom dia! Que hoje seja produtivo.',cls:'m1'},
+  {emoji:'💪',msg:'Cada registro certo ajuda a fechar o mês sem correria.',sub:'Você faz a diferença todos os dias.',cls:'m2'},
+  {emoji:'🌟',msg:'Pequenas rotinas bem feitas sustentam grandes resultados.',sub:'Continue assim — consistência é tudo!',cls:'m3'},
+  {emoji:'🎯',msg:'Pontualidade é uma forma simples de respeito.',sub:'Com você e com a equipe.',cls:'m4'},
+  {emoji:'✨',msg:'Hoje é mais uma oportunidade de fazer o essencial bem feito.',sub:'Foco e clareza fazem a diferença.',cls:'m5'},
+  {emoji:'🔥',msg:'Trabalho bem registrado vira fechamento sem dúvidas.',sub:'Registro certo, mês tranquilo.',cls:'m1'},
+  {emoji:'🌈',msg:'Disciplina no dia a dia evita problemas no fim do mês.',sub:'Você já está no caminho certo!',cls:'m2'},
+  {emoji:'💡',msg:'Um bom dia começa com presença, foco e clareza.',sub:'Bora arrasar hoje!',cls:'m3'},
+  {emoji:'🏆',msg:'Comece pelo simples: registre seu ponto e siga com calma.',sub:'Passo a passo, dia a dia.',cls:'m4'},
+  {emoji:'⚡',msg:'Seu cuidado com o ponto também cuida da sua tranquilidade.',sub:'Cada detalhe importa.',cls:'m5'}
+];
+const DESCANSO_DATA=[
+  {emoji:'🌴',msg:'Bom final de semana! Descanse e recarregue as energias.',sub:'Você merece descansar.',cls:'m3'},
+  {emoji:'☀️',msg:'Aproveite o dia de descanso com quem você ama.',sub:'Até segunda-feira!',cls:'m1'},
+  {emoji:'🎉',msg:'Feriado! Dia para relaxar e renovar as energias.',sub:'Aproveite bastante!',cls:'m4'}
+];
+
+function getMotivCard(iso){
+  if(isWeekend(iso)){const dow=new Date(iso+'T12:00').getDay();const d=DESCANSO_DATA[dow===0?0:1];return d;}
+  const f=getFeriado(iso);if(f)return DESCANSO_DATA[2];
+  const[y,m,d]=iso.split('-').map(Number);
+  return MOTIV_DATA[(new Date(y,m-1,d).getDate()+new Date(y,m-1,d).getDay())%MOTIV_DATA.length];
+}
+
 // ═══ PUNCH ═══════════════════════════════════
 function renderPunch(){
   const emp=employees.find(e=>e.id===currentUser?.employee_id);
-  if(!emp){document.getElementById('punch-panel').innerHTML='<div style="color:white;padding:20px;text-align:center">Funcionário não vinculado.</div>';return;}
+  if(!emp){document.getElementById('punch-panel').innerHTML='<div style="color:white;padding:20px;text-align:center">Funcionário não vinculado ao seu login.<br>Contate o administrador.</div>';return;}
+  const today=todayIso();
+  
+  // Motivação colorida
+  const mv=getMotivCard(today);
+  document.getElementById('punch-motivation').innerHTML=`
+    <div class="motiv-card ${mv.cls}">
+      <div class="motiv-emoji">${mv.emoji}</div>
+      <div class="motiv-text">
+        <strong>${mv.msg}</strong>
+        <span>${mv.sub}</span>
+      </div>
+    </div>`;
+
+  const dayOff=isDayOff(today);
+  const feriado=getFeriado(today);
+  const rec=records.find(r=>r.employee_id===emp.id&&r.date===today);
+  const next=dayOff?null:getNextAction(rec);
+  const now=currentTime();
+
+  // Painel relógio
+  let btnHtml='';
+  if(dayOff){
+    const msg=feriado?`🎉 ${feriado}`:isWeekend(today)?'🌴 Fim de semana':'Dia sem expediente';
+    btnHtml=`<button class="btn-punch blocked" disabled>${msg}</button>`;
+  }else if(!next){
+    btnHtml=`<button class="btn-punch done" disabled>✓ Jornada completa hoje!</button>`;
+  }else{
+    btnHtml=`<button class="btn-punch" onclick="registerPunch()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Registrar ${next.l}
+    </button>`;
+  }
+  document.getElementById('punch-panel').innerHTML=`
+    <div class="clock-date">${['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][new Date(today+'T12:00').getDay()]}, ${formatDate(today)}</div>
+    <div class="clock-time" id="live-clock">${now}</div>
+    <div class="clock-next${!next&&!dayOff?' done':''}">
+      ${dayOff?'<strong>Dia de descanso</strong>':next?`Próximo: <strong>${next.l}</strong>`:'<strong>✓ Todos os registros feitos!</strong>'}
+    </div>
+    ${btnHtml}`;
+
+  // Progress steps
+  document.getElementById('punch-progress').innerHTML=PUNCH.map((a,i)=>{
+    const v=rec?.[a.f];
+    const isNext=!dayOff&&next?.f===a.f;
+    const cls=v?'done':isNext?'active':'';
+    return `<div class="pp-step ${cls}">
+      <div class="pp-dot">${v?'✓':isNext?'⏺':i+1}</div>
+      <div class="pp-lbl">${a.l}</div>
+      <div class="pp-time">${v??'--:--'}</div>
+    </div>`;
+  }).join('');
+
+  // Campo de vendas (se não for dia off)
+  const salesEl=document.getElementById('sales-input-area');
+  if(!dayOff&&rec){
+    const curSales=rec.sales_amount||0;
+    const hora=Number(currentTime().split(':')[0]);
+    const semVendas=!curSales||curSales===0;
+    const lembrete=emp.has_commission&&semVendas&&hora>=17;
+    const nome=emp.name.split(' ')[0];
+    salesEl.innerHTML=`
+      ${lembrete?`<div class="sales-reminder">
+        <div class="sr-title">Oi, ${nome}! 👋</div>
+        <div class="sr-msg">
+          Não esquece de registrar as vendas de hoje antes de ir embora! 🛍️<br>
+          Coloca só o total das vendas <strong>confirmadas</strong> — pedidos cancelados ou em aberto não entram, tá?
+        </div>
+        <div class="sr-tip">💡 Lembra: suas vendas acumulam para o cálculo da sua comissão mensal!</div>
+      </div>`:''}
+      <div class="sales-input-wrap">
+        <div class="sales-input-title">💰 Vendas do dia</div>
+        <div class="sales-input-sub">Informe o total de vendas <strong>consolidadas</strong> de hoje — excluindo canceladas e em aberto</div>
+        <div class="sales-input-row">
+          <input class="sales-input-field" type="number" id="sales-val" placeholder="0,00" value="${curSales||''}" step="0.01" min="0">
+          <button class="btn-save-sales" onclick="saveSales()">Salvar</button>
+        </div>
+        ${curSales>0?`<div style="margin-top:8px;font-size:13px;color:var(--virtus-dark);font-weight:700">✓ Registrado hoje: ${fmtBRL(curSales)}</div>`:''}
+      </div>`;
+  } else {
+    salesEl.innerHTML='';
+  }
+
+  // Stats do mês
+  const mRecs=records.filter(r=>r.employee_id===emp.id&&r.date.startsWith(currentMonthIso())&&r.date<=today);
+  const workedDays=mRecs.filter(r=>r.clock_in).length;
+  const totalWorked=mRecs.reduce((s,r)=>s+workedMin(r),0);
+  const totalExpected=workedDays*emp.expected_daily_minutes;
+  const bal=totalWorked-totalExpected;
+  const totalSales=mRecs.reduce((s,r)=>s+Number(r.sales_amount||0),0);
+  const meta=Number(emp.commission_threshold||0);
+  const comm=emp.has_commission&&totalSales>meta?(totalSales-meta)*Number(emp.commission_rate||0)/100:0;
+
+  let statsHtml=`
+    <div class="es-card">
+      <div class="es-val">${workedDays}</div>
+      <div class="es-lbl">Dias trabalhados</div>
+    </div>
+    <div class="es-card">
+      <div class="es-val">${minToTime(totalWorked)}</div>
+      <div class="es-lbl">Horas no mês</div>
+    </div>
+    <div class="es-card">
+      <div class="es-val ${bal>=0?'pos':'neg'}">${bal>=0?'+':''}${minToTime(bal)}</div>
+      <div class="es-lbl">Saldo do mês</div>
+    </div>`;
+
+  if(emp.has_commission){
+    statsHtml+=`
+      <div class="es-card" style="grid-column:1/-1;background:var(--virtus-soft);border-color:var(--virtus)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="es-val pos">${fmtBRL(totalSales)}</div>
+            <div class="es-lbl">Vendas do mês</div>
+          </div>
+          <div style="text-align:right">
+            <div class="es-val pos">${fmtBRL(comm)}</div>
+            <div class="es-lbl">Comissão ${comm>0?'calculada':'(meta: '+fmtBRL(meta)+')'}</div>
+          </div>
+        </div>
+        ${totalSales>0&&totalSales<meta?`<div style="margin-top:8px;background:rgba(13,148,136,.1);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--virtus-dark);font-weight:600">
+          Faltam ${fmtBRL(meta-totalSales)} para atingir a meta de comissão
+          <div style="margin-top:6px;background:var(--line);border-radius:99px;height:6px;overflow:hidden">
+            <div style="height:100%;background:var(--virtus);border-radius:99px;width:${Math.min(100,totalSales/meta*100).toFixed(1)}%"></div>
+          </div>
+        </div>`:''}
+      </div>`;
+  }
+  document.getElementById('punch-stats').innerHTML=statsHtml;
+
+  // Gráfico de vendas dos últimos 7 dias úteis
+  if(emp.has_commission){
+    const last7=[];
+    let d=new Date(today+'T12:00');
+    while(last7.length<7){
+      const iso=todayIso(d);
+      if(!isWeekend(iso)&&!getFeriado(iso))last7.unshift(iso);
+      d.setDate(d.getDate()-1);
+    }
+    const maxSales=Math.max(...last7.map(dt=>{const r=records.find(x=>x.employee_id===emp.id&&x.date===dt);return Number(r?.sales_amount||0);}),1);
+    document.getElementById('sales-chart-area').innerHTML=`
+      <div class="chart-wrap">
+        <div class="chart-title">📊 Vendas — últimos 7 dias úteis</div>
+        <div class="chart-bars">
+          ${last7.map(dt=>{
+            const r=records.find(x=>x.employee_id===emp.id&&x.date===dt);
+            const v=Number(r?.sales_amount||0);
+            const pct=Math.max(4,v/maxSales*100);
+            const isToday=dt===today;
+            return `<div class="chart-bar-wrap">
+              <div class="chart-bar-val">${v>0?'R$'+Math.round(v/1000)+'k':''}</div>
+              <div class="chart-bar${isToday?' today':''}" style="height:${pct}%"></div>
+              <div class="chart-bar-lbl">${formatDay(dt).slice(0,3)}<br>${dt.split('-')[2]}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('sales-chart-area').innerHTML='';
+  }
+
+  // Histórico
+  const hist=[...mRecs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('punch-history').innerHTML=hist.length===0
+    ? emptyState('Nenhum registro este mês ainda.')
+    : hist.map(r=>{
+        const wm=workedMin(r);
+        const bal=r.clock_out?wm-emp.expected_daily_minutes:null;
+        const miss=missingMarks(r);
+        return `<div class="hist-item ${miss.length===0&&r.clock_out?'ok':'pend'}">
+          <div>
+            <div class="hist-date">${formatDate(r.date)}</div>
+            <div class="hist-day">${formatDay(r.date)}${miss.length?` · ⚠ ${miss.join(', ')}`:''}${r.sales_amount>0?` · 💰${fmtBRL(r.sales_amount)}`:''}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="hist-hours">${r.clock_in??'--:--'} → ${r.clock_out??'--:--'}</div>
+            ${bal!==null?`<div class="hist-bal ${bal>=0?'pos':'neg'}">${bal>=0?'+':''}${minToTime(bal)}</div>`:'<div class="hist-bal" style="color:var(--muted)">em aberto</div>'}
+          </div>
+        </div>`;
+      }).join('');
+}
+  const emp=employees.find(e=>e.id===currentUser?.employee_id);
+  if(!emp){document.getElementById('punch-panel').innerHTML='<div style="color:white;padding:20px;text-align:center">Funcionário não vinculado ao seu login.<br>Contate o administrador.</div>';return;}
   const today=todayIso();
   document.getElementById('punch-motivation').innerHTML=motivationHtml(today);
   const dayOff=isDayOff(today);
@@ -772,37 +1074,80 @@ function renderPunch(){
   const rec=records.find(r=>r.employee_id===emp.id&&r.date===today);
   const next=dayOff?null:getNextAction(rec);
   const now=currentTime();
-  const mRows=buildRows(records,[emp],currentMonthIso(),emp.id);
-  const wMth=mRows.reduce((s,r)=>s+r.workedMinutes,0);
-  const bMth=mRows.reduce((s,r)=>s+r.balanceMinutes,0);
 
+  // ── Painel do relógio ──
   let btnHtml='';
   if(dayOff){
-    const msg=feriado?`Feriado: ${feriado}`:isWeekend(today)?'Fim de semana — sem expediente':'Dia sem expediente';
+    const msg=feriado?`🎉 Feriado: ${feriado}`:isWeekend(today)?'🌴 Fim de semana — sem expediente':'Dia sem expediente';
     btnHtml=`<button class="btn-punch blocked" disabled>${msg}</button>`;
   }else if(!next){
-    btnHtml=`<button class="btn-punch done" disabled>✓ Jornada completa</button>`;
+    btnHtml=`<button class="btn-punch done" disabled>✓ Jornada completa hoje!</button>`;
   }else{
-    btnHtml=`<button class="btn-punch" onclick="registerPunch()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Registrar ${next.l}</button>`;
+    btnHtml=`<button class="btn-punch" onclick="registerPunch()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Registrar ${next.l}
+    </button>`;
   }
   document.getElementById('punch-panel').innerHTML=`
-    <div class="clock-date">${formatDay(today)}, ${formatDate(today)}</div>
+    <div class="clock-date">${['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][new Date(today+'T12:00').getDay()]}, ${formatDate(today)}</div>
     <div class="clock-time" id="live-clock">${now}</div>
-    <div class="clock-next${!next?' done':''}">Próximo: <strong>${next?next.l:dayOff?'Dia de descanso':'Concluído ✓'}</strong></div>
+    <div class="clock-next${!next&&!dayOff?' done':''}">
+      ${dayOff?'<strong>Dia de descanso</strong>':next?`Próximo: <strong>${next.l}</strong>`:'<strong>✓ Todos os registros feitos!</strong>'}
+    </div>
     ${btnHtml}`;
 
-  document.getElementById('punch-timeline').innerHTML=PUNCH.map(a=>{
+  // ── Progress steps ──
+  document.getElementById('punch-progress').innerHTML=PUNCH.map(a=>{
     const v=rec?.[a.f];
-    return `<div class="tl-item${v?' done':''}">
-      <div class="tl-dot${v?' done':''}">${v?'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>'}</div>
-      <div class="tl-lbl">${a.l}</div>
-      <div class="tl-time">${v??'--:--'}</div>
+    const isNext=!dayOff&&next?.f===a.f;
+    const cls=v?'done':isNext?'active':'';
+    return `<div class="pp-step ${cls}">
+      <div class="pp-dot">${v?'✓':isNext?'→':PUNCH.indexOf(a)+1}</div>
+      <div class="pp-lbl">${a.l}</div>
+      <div class="pp-time">${v??'--:--'}</div>
     </div>`;
   }).join('');
 
-  document.getElementById('punch-metrics').innerHTML=`
-    ${mc(monthLabel(currentMonthIso()),minToTime(wMth),'blue','<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>')}
-    ${mc('Saldo do mês',minToTime(bMth),bMth>=0?'green':'red','<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>')}`;
+  // ── Stats do mês ──
+  const today_iso=todayIso();
+  const mRecs=records.filter(r=>r.employee_id===emp.id&&r.date.startsWith(currentMonthIso())&&r.date<=today_iso);
+  const workedDays=mRecs.filter(r=>r.clock_in).length;
+  const totalWorked=mRecs.reduce((s,r)=>s+workedMin(r),0);
+  const totalExpected=workedDays*emp.expected_daily_minutes;
+  const bal=totalWorked-totalExpected;
+  document.getElementById('punch-stats').innerHTML=`
+    <div class="es-card">
+      <div class="es-val">${workedDays}</div>
+      <div class="es-lbl">Dias trabalhados</div>
+    </div>
+    <div class="es-card">
+      <div class="es-val">${minToTime(totalWorked)}</div>
+      <div class="es-lbl">Horas no mês</div>
+    </div>
+    <div class="es-card">
+      <div class="es-val ${bal>=0?'pos':'neg'}">${bal>=0?'+':''}${minToTime(bal)}</div>
+      <div class="es-lbl">Saldo do mês</div>
+    </div>`;
+
+  // ── Histórico últimos 5 dias ──
+  const hist=[...mRecs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('punch-history').innerHTML=hist.length===0
+    ? emptyState('Nenhum registro este mês ainda.')
+    : hist.map(r=>{
+        const wm=workedMin(r);
+        const bal=r.clock_out?wm-emp.expected_daily_minutes:null;
+        const miss=missingMarks(r);
+        return `<div class="hist-item ${miss.length===0&&r.clock_out?'ok':'pend'}">
+          <div>
+            <div class="hist-date">${formatDate(r.date)}</div>
+            <div class="hist-day">${formatDay(r.date)}${miss.length?` · ⚠ ${miss.join(', ')}`:''}  </div>
+          </div>
+          <div style="text-align:right">
+            <div class="hist-hours">${r.clock_in??'--:--'} → ${r.clock_out??'--:--'}</div>
+            ${bal!==null?`<div class="hist-bal ${bal>=0?'pos':'neg'}">${bal>=0?'+':''}${minToTime(bal)}</div>`:'<div class="hist-bal" style="color:var(--muted)">em aberto</div>'}
+          </div>
+        </div>`;
+      }).join('');
 }
 async function registerPunch(){
   const emp=employees.find(e=>e.id===currentUser?.employee_id);if(!emp)return;
@@ -1182,6 +1527,25 @@ async function saveBatch(){
   renderAdjList();
 }
 
+async function saveSales(){
+  const emp=employees.find(e=>e.id===currentUser?.employee_id);
+  if(!emp)return;
+  const today=todayIso();
+  const val=Number(document.getElementById('sales-val')?.value||0);
+  if(val<0){toast('Valor inválido','error');return;}
+  const existing=records.find(r=>r.employee_id===emp.id&&r.date===today);
+  if(!existing){toast('Bata o ponto primeiro antes de registrar vendas','warn');return;}
+  if(DB_OK){
+    try{
+      const{error}=await sb.from('time_records').update({sales_amount:val}).eq('id',existing.id);
+      if(error)throw error;
+    }catch(err){toast('Erro: '+err.message,'error');return;}
+  }
+  records=records.map(r=>r.id===existing.id?{...r,sales_amount:val}:r);
+  toast(`✓ Vendas de ${fmtBRL(val)} registradas!`,'success');
+  renderPunch();
+}
+
 // ═══ HOLERITE ════════════════════════════════
 let holEmpId='';
 let holMonth=currentMonthIso();
@@ -1189,6 +1553,7 @@ let holFaltasJust='0';
 let holCalcMethod='uteis';
 let holDiasUteis='22';
 let holVendas='0';
+let holVendasDisplay=0;
 
 function renderHolerite(){
   if(!holEmpId && employees.length>0) holEmpId=employees[0].id;
@@ -1247,17 +1612,22 @@ function buildHoleriteDoc(){
   const totalWorkedMin=monthRecs.reduce((s,r)=>s+workedMin(r),0);
   const expectedMin=totalDiasUteis*emp.expected_daily_minutes;
   const balanceMin=monthRecs.filter(r=>r.clock_in).reduce((s,r)=>s+workedMin(r),0)-(workingDays*emp.expected_daily_minutes);
-  // comissão sobre excedente da meta
+  // comissão baseada nas vendas registradas no mês
   let commission=0;
   let commissionDetail='';
   if(emp.has_commission){
     const meta=Number(emp.commission_threshold||80000);
     const rate=Number(emp.commission_rate||2)/100;
-    const vendas=Number(holVendas||0);
+    // usa vendas dos registros do mês OU campo manual se informado
+    const vendasRegistradas=monthRecs.reduce((s,r)=>s+Number(r.sales_amount||0),0);
+    const vendas=Number(holVendas||0)>0?Number(holVendas):vendasRegistradas;
+    holVendasDisplay=vendas;
     if(vendas>meta){
       const excedente=vendas-meta;
       commission=excedente*rate;
       commissionDetail=`Vendas ${fmtBRL(vendas)} · Meta ${fmtBRL(meta)} · Excedente ${fmtBRL(excedente)} × ${emp.commission_rate}%`;
+    }else if(vendas>0){
+      commissionDetail=`Vendas ${fmtBRL(vendas)} · Meta ${fmtBRL(meta)} · Faltam ${fmtBRL(meta-vendas)}`;
     }
   }
   const descontoFalta=faltasInjust>0&&salary>0?(salary/divisor)*faltasInjust:0;
