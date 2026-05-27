@@ -1188,6 +1188,7 @@ let holMonth=currentMonthIso();
 let holFaltasJust='0';
 let holCalcMethod='uteis';
 let holDiasUteis='22';
+let holVendas='0';
 
 function renderHolerite(){
   if(!holEmpId && employees.length>0) holEmpId=employees[0].id;
@@ -1211,6 +1212,9 @@ function renderHolerite(){
           <div class="f-group"><label class="f-label">Faltas justificadas</label>
             <input class="f-input" type="number" value="${holFaltasJust}" min="0" oninput="holFaltasJust=this.value;renderHolerite()">
           </div>
+          ${emp?.has_commission?`<div class="f-group"><label class="f-label">Vendas do mês (R$) <span style="color:var(--orange-dark);font-weight:800">*para calcular comissão</span></label>
+            <input class="f-input" type="number" id="hol-vendas" placeholder="Ex: 100000" value="${holVendas}" oninput="holVendas=this.value;buildHoleriteDoc()">
+          </div>`:''}
         </div>
         <div class="f-group">
           <label class="f-label">Método de cálculo de desconto</label>
@@ -1243,13 +1247,18 @@ function buildHoleriteDoc(){
   const totalWorkedMin=monthRecs.reduce((s,r)=>s+workedMin(r),0);
   const expectedMin=totalDiasUteis*emp.expected_daily_minutes;
   const balanceMin=monthRecs.filter(r=>r.clock_in).reduce((s,r)=>s+workedMin(r),0)-(workingDays*emp.expected_daily_minutes);
-  // comissão
+  // comissão sobre excedente da meta
   let commission=0;
+  let commissionDetail='';
   if(emp.has_commission){
     const meta=Number(emp.commission_threshold||80000);
     const rate=Number(emp.commission_rate||2)/100;
-    // simplificado — exibe campo para informar vendas
-    commission=0; // será editável futuramente
+    const vendas=Number(holVendas||0);
+    if(vendas>meta){
+      const excedente=vendas-meta;
+      commission=excedente*rate;
+      commissionDetail=`Vendas ${fmtBRL(vendas)} · Meta ${fmtBRL(meta)} · Excedente ${fmtBRL(excedente)} × ${emp.commission_rate}%`;
+    }
   }
   const descontoFalta=faltasInjust>0&&salary>0?(salary/divisor)*faltasInjust:0;
   const totalProventos=salary+vaTotal+vtTotal+commission;
@@ -1305,7 +1314,8 @@ function buildHoleriteDoc(){
             <div class="holerite-item highlight"><span>Salário base</span><b>${fmtBRL(salary)}</b></div>
             <div class="holerite-item"><span>Vale Alimentação (${workingDays}d)</span><b>${fmtBRL(vaTotal)}</b></div>
             <div class="holerite-item"><span>Vale Transporte (${workingDays}d)</span><b>${fmtBRL(vtTotal)}</b></div>
-            ${emp.has_commission?`<div class="holerite-item commission"><span>Comissão (${emp.commission_rate}%)</span><b>${fmtBRL(commission)}</b></div>`:''}
+            ${emp.has_commission?`<div class="holerite-item commission"><span>Comissão ${commission>0?'('+emp.commission_rate+'% excedente)':'— aguardando vendas'}</span><b>${fmtBRL(commission)}</b></div>
+            ${commissionDetail?`<div style="grid-column:1/-1;font-size:11px;color:var(--virtus-dark);padding:6px 12px;background:var(--virtus-soft);border-radius:6px">${commissionDetail}</div>`:''}`:''}
           </div>
         </div>
 
