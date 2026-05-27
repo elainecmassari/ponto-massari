@@ -735,7 +735,9 @@ async function init(){
 
 // ═══ AUTH ════════════════════════════════════
 function renderQuickList(){
-  document.getElementById('quick-list').innerHTML=users.slice(0,3).map(u=>`
+  const el=document.getElementById('quick-list');
+  if(!el)return; // elemento removido — acesso rápido desabilitado
+  el.innerHTML=users.slice(0,3).map(u=>`
     <div class="quick-user" onclick="quickLogin('${u.id}')">
       <div class="qu-avatar ${u.role==='admin'?'admin':''}">${u.role==='admin'?'★':avatarText(u.name)}</div>
       <div>
