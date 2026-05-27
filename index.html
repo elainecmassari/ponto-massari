@@ -473,6 +473,7 @@ button:disabled{cursor:not-allowed;opacity:.6;}
       <div class="hist-list" id="punch-history"></div>
     </div>
     <div class="view" id="view-Alertas"><div id="alertas-content"></div></div>
+    <div class="view" id="view-Relatorios"><div id="report-content"></div></div>
     <div class="view" id="view-Holerite"><div id="holerite-content"></div></div>
     <div class="view" id="view-Calendario"><div id="cal-content"></div></div>
     <div class="view" id="view-MeuMes"><div id="mymonth-content"></div></div>
@@ -1707,6 +1708,7 @@ let holVendasDisplay=0;
 
 function renderHolerite(){
   if(!holEmpId && employees.length>0) holEmpId=employees[0].id;
+  const emp=employees.find(e=>e.id===holEmpId);
   const empOpts=employees.map(e=>e.id);
   document.getElementById('holerite-content').innerHTML=`
     <div class="holerite-wrap">
