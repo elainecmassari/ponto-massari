@@ -437,6 +437,9 @@ button:disabled{cursor:not-allowed;opacity:.6;}
     <div class="topbar-right">
       <span class="topbar-user" id="topbar-user"></span>
       <span class="status-badge" id="status-badge"></span>
+      <button class="icon-btn" id="btn-change-pin" onclick="openPinModal()" title="Alterar PIN" style="display:none">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </button>
       <button class="icon-btn" onclick="doLogout()" title="Sair">
         <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
@@ -580,6 +583,26 @@ button:disabled{cursor:not-allowed;opacity:.6;}
     <div style="display:flex;gap:10px;margin-top:8px">
       <button class="btn btn-primary" style="flex:1" onclick="saveEmpModal()">Salvar alterações</button>
       <button class="btn btn-ghost" onclick="closeEmpModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALTERAR PIN -->
+<div class="modal-overlay" id="modal-pin">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <div class="modal-title">🔐 Alterar meu PIN</div>
+      <button class="modal-close" onclick="closePinModal()">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Escolha um PIN de 4 a 8 dígitos que só você saiba. Não compartilhe com ninguém!
+    </div>
+    <div class="f-group"><label class="f-label">PIN atual</label><input class="f-input" type="password" id="pin-atual" placeholder="••••" maxlength="8"></div>
+    <div class="f-group"><label class="f-label">Novo PIN</label><input class="f-input" type="password" id="pin-novo" placeholder="••••" maxlength="8"></div>
+    <div class="f-group"><label class="f-label">Confirmar novo PIN</label><input class="f-input" type="password" id="pin-conf" placeholder="••••" maxlength="8" onkeydown="if(event.key==='Enter')savePin()"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="savePin()">Salvar novo PIN</button>
+      <button class="btn btn-ghost" onclick="closePinModal()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -765,6 +788,9 @@ function loginAs(user){
   renderNavbar();
   switchTab(user.role==='admin'?'Painel':'Ponto');
   startClock();
+  // mostrar botão de alterar PIN só para funcionários
+  const btnPin=document.getElementById('btn-change-pin');
+  if(btnPin) btnPin.style.display=user.role==='employee'?'flex':'none';
 }
 function doLogout(){
   currentUser=null;
@@ -1285,6 +1311,37 @@ function renderAdjList(){
 function adjFromRec(eid,date){
   adjEmpId=eid;document.getElementById('adj-date').value=date;
   renderAdjustments();loadAdjustment();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══ ALTERAR PIN ═════════════════════════════
+function openPinModal(){
+  document.getElementById('pin-atual').value='';
+  document.getElementById('pin-novo').value='';
+  document.getElementById('pin-conf').value='';
+  document.getElementById('modal-pin').classList.add('open');
+}
+function closePinModal(){
+  document.getElementById('modal-pin').classList.remove('open');
+}
+async function savePin(){
+  const atual=document.getElementById('pin-atual').value.trim();
+  const novo=document.getElementById('pin-novo').value.trim();
+  const conf=document.getElementById('pin-conf').value.trim();
+  if(!atual||!novo||!conf){toast('Preencha todos os campos','error');return;}
+  const user=users.find(u=>u.id===currentUser?.id);
+  if(!user||user.pin!==atual){toast('PIN atual incorreto','error');return;}
+  if(novo.length<4){toast('PIN deve ter no mínimo 4 dígitos','error');return;}
+  if(novo!==conf){toast('Os PINs não coincidem','error');return;}
+  if(DB_OK){
+    try{
+      const{error}=await sb.from('system_users').update({pin:novo}).eq('id',user.id);
+      if(error)throw error;
+    }catch(err){toast('Erro: '+err.message,'error');return;}
+  }
+  users=users.map(u=>u.id===user.id?{...u,pin:novo}:u);
+  currentUser={...currentUser,pin:novo};
+  closePinModal();
+  toast('✓ PIN alterado com sucesso!','success');
 }
 
 // ═══ MODAL EDITAR FUNCIONÁRIO ═══════════════
