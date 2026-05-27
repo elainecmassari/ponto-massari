@@ -205,6 +205,24 @@ button:disabled{cursor:not-allowed;opacity:.6;}
 .btn-ghost{background:var(--base);color:var(--ink);border:1.5px solid var(--line);}
 .btn-ghost:hover{border-color:var(--ink-soft);}
 .btn-sm{height:34px;font-size:12px;padding:0 12px;width:auto;}
+.btn-danger{background:var(--danger-soft);color:var(--danger);border:1.5px solid #fca5a5;}
+.btn-danger:hover{background:#fee2e2;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .2s ease;}
+@keyframes modalIn{from{transform:scale(.96) translateY(10px);opacity:0;}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.modal-title{font-size:16px;font-weight:800;color:var(--ink);}
+.modal-close{width:32px;height:32px;border:none;background:var(--base);border-radius:8px;cursor:pointer;font-size:16px;color:var(--muted);display:flex;align-items:center;justify-content:center;}
+.modal-close:hover{background:var(--line);}
+
+/* ── BATCH ── */
+.batch-row{display:grid;grid-template-columns:auto 1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;padding:8px;background:var(--paper);border-radius:var(--radius-sm);margin-bottom:6px;border:1px solid var(--line);}
+.batch-date{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.batch-input{height:36px;border:1px solid var(--line);border-radius:6px;padding:0 8px;font-size:13px;font-family:'DM Mono',monospace;width:100%;background:var(--surface);color:var(--ink);outline:none;}
+.batch-input:focus{border-color:var(--orange);}
 
 /* ── EMP CARD ── */
 .emp-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow-sm);}
@@ -372,6 +390,7 @@ button:disabled{cursor:not-allowed;opacity:.6;}
           <div class="f-group"><label class="f-label">Cargo *</label><input class="f-input" id="ef-pos" placeholder="Ex: Auxiliar"></div>
           <div class="f-group"><label class="f-label">Setor</label><input class="f-input" id="ef-dep" placeholder="Ex: Financeiro"></div>
           <div class="f-group"><label class="f-label">Admissão</label><input class="f-input" id="ef-adm" type="date"></div>
+          <div class="f-group"><label class="f-label">Início do controle</label><input class="f-input" id="ef-start" type="date"></div>
           <div class="f-group"><label class="f-label">Horas/dia</label><input class="f-input" id="ef-hrs" value="8"></div>
           <div class="f-group"><label class="f-label">Salário (R$)</label><input class="f-input" id="ef-salary" placeholder="0,00" type="number"></div>
           <div class="f-group"><label class="f-label">Vale Alimentação (R$)</label><input class="f-input" id="ef-va" placeholder="0,00" type="number"></div>
@@ -393,7 +412,7 @@ button:disabled{cursor:not-allowed;opacity:.6;}
     </div>
     <div class="view" id="view-Ajustes">
       <div class="card">
-        <div class="card-title">Ajustar ponto</div>
+        <div class="card-title">Ajustar ponto — dia específico</div>
         <div class="f-group"><label class="f-label">Funcionário</label><div class="choice-row" id="adj-emp-row"></div></div>
         <div class="form-grid">
           <div class="f-group"><label class="f-label">Data</label><input class="f-input" id="adj-date" type="date"></div>
@@ -406,8 +425,73 @@ button:disabled{cursor:not-allowed;opacity:.6;}
         <div class="f-group"><label class="f-label">Observação</label><textarea class="f-textarea" id="adj-notes" placeholder="Motivo do ajuste..."></textarea></div>
         <button class="btn btn-primary" onclick="saveAdjustment()">Salvar ajuste</button>
       </div>
+
+      <div class="card">
+        <div class="card-title">Lançamento em massa</div>
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="f-group"><label class="f-label">Funcionário</label>
+            <select class="f-input" id="batch-emp">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="f-group"><label class="f-label">Período</label>
+            <input class="f-input" type="month" id="batch-month">
+          </div>
+        </div>
+        <div class="form-grid" style="margin-bottom:14px">
+          <div class="f-group"><label class="f-label">Entrada padrão</label><input class="f-input" id="batch-in" type="time" value="08:00"></div>
+          <div class="f-group"><label class="f-label">Saída almoço</label><input class="f-input" id="batch-lo" type="time" value="12:00"></div>
+          <div class="f-group"><label class="f-label">Volta almoço</label><input class="f-input" id="batch-li" type="time" value="13:00"></div>
+          <div class="f-group"><label class="f-label">Saída</label><input class="f-input" id="batch-out" type="time" value="17:00"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <button class="btn btn-ghost btn-sm" onclick="previewBatch()">👁 Prévia dos dias</button>
+          <button class="btn btn-primary btn-sm" onclick="saveBatch()">✓ Lançar todos</button>
+        </div>
+        <div id="batch-preview"></div>
+      </div>
+
       <div class="section-hdr"><div class="section-title">Últimos registros</div></div>
       <div id="adj-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR FUNCIONÁRIO -->
+<div class="modal-overlay" id="modal-emp">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-emp-title">Editar funcionário</div>
+      <button class="modal-close" onclick="closeEmpModal()">✕</button>
+    </div>
+    <input type="hidden" id="modal-emp-id">
+    <div class="form-grid">
+      <div class="f-group"><label class="f-label">Nome completo *</label><input class="f-input" id="me-name"></div>
+      <div class="f-group"><label class="f-label">CPF / Documento *</label><input class="f-input" id="me-doc"></div>
+      <div class="f-group"><label class="f-label">Cargo *</label><input class="f-input" id="me-pos"></div>
+      <div class="f-group"><label class="f-label">Setor</label><input class="f-input" id="me-dep"></div>
+      <div class="f-group"><label class="f-label">Admissão</label><input class="f-input" id="me-adm" type="date"></div>
+      <div class="f-group"><label class="f-label">Horas/dia</label><input class="f-input" id="me-hrs" type="number"></div>
+      <div class="f-group"><label class="f-label">Início do controle</label><input class="f-input" id="me-start" type="date"></div>
+      <div class="f-group"><label class="f-label">PIN de acesso</label><input class="f-input" id="me-pin" maxlength="8"></div>
+      <div class="f-group"><label class="f-label">Salário (R$)</label><input class="f-input" id="me-salary" type="number"></div>
+      <div class="f-group"><label class="f-label">Vale Alimentação</label><input class="f-input" id="me-va" type="number"></div>
+      <div class="f-group"><label class="f-label">Vale Transporte</label><input class="f-input" id="me-vt" type="number"></div>
+      <div class="f-group"><label class="f-label">Entrada padrão</label><input class="f-input" id="me-entry" type="time"></div>
+      <div class="f-group"><label class="f-label">Saída padrão</label><input class="f-input" id="me-exit" type="time"></div>
+      <div class="f-group"><label class="f-label">Saída almoço</label><input class="f-input" id="me-lout" type="time"></div>
+      <div class="f-group"><label class="f-label">Volta almoço</label><input class="f-input" id="me-lin" type="time"></div>
+      <div class="f-group" style="align-self:flex-end">
+        <label class="f-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="me-comm"> Tem comissão
+        </label>
+      </div>
+      <div class="f-group"><label class="f-label">Meta comissão (R$)</label><input class="f-input" id="me-cthresh" type="number"></div>
+      <div class="f-group"><label class="f-label">% comissão</label><input class="f-input" id="me-crate" type="number"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveEmpModal()">Salvar alterações</button>
+      <button class="btn btn-ghost" onclick="closeEmpModal()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -498,7 +582,7 @@ function buildRows(recs,emps,monthIso,empId='all'){
   const daysInMonth=new Date(monthIso.split('-')[0],monthIso.split('-')[1],0).getDate();
   const allDays=Array.from({length:daysInMonth},(_,i)=>`${monthIso}-${pad(i+1)}`);
   const filteredEmps=empId==='all'?emps:emps.filter(e=>e.id===empId);
-  return filteredEmps.flatMap(e=>allDays.filter(d=>!isWeekend(d)&&!getFeriado(d)).map(d=>{
+  return filteredEmps.flatMap(e=>allDays.filter(d=>!isWeekend(d)&&!getFeriado(d)&&(!e.start_date||d>=e.start_date)).map(d=>{
     const r=recs.find(x=>x.employee_id===e.id&&x.date===d)||{employee_id:e.id,date:d};
     const wm=workedMin(r),lm=lunchMin(r);
     return{record:r,employee:e,workedMinutes:wm,lunchMinutes:lm,expectedMinutes:e.expected_daily_minutes,balanceMinutes:r.clock_in?wm-e.expected_daily_minutes:0,missingMarks:missingMarks(r),hasRecord:!!r.clock_in};
@@ -819,6 +903,7 @@ function renderCalendar(){
 // ═══ EMPLOYEES ═══════════════════════════════
 function renderEmployees(){
   document.getElementById('ef-adm').value=todayIso();
+  document.getElementById('ef-start').value=todayIso();
   document.getElementById('emp-list').innerHTML=employees.map(emp=>{
     const user=users.find(u=>u.employee_id===emp.id);
     return `<div class="emp-card">
@@ -832,11 +917,15 @@ function renderEmployees(){
         </div>
       </div>
       <div class="emp-meta">Jornada ${minToTime(emp.expected_daily_minutes)}/dia · Admissão ${formatDate(emp.admission_date)}</div>
+      ${emp.start_date?`<div class="emp-meta">Controle a partir de: <strong>${formatDate(emp.start_date)}</strong></div>`:''}
       <div class="emp-meta" style="margin-top:4px">Salário ${fmtBRL(emp.salary)} · VA ${fmtBRL(emp.va)} · VT ${fmtBRL(emp.vt)}</div>
       ${emp.has_commission?`<div class="emp-commission">Comissão: ${emp.commission_rate}% acima de ${fmtBRL(emp.commission_threshold)}</div>`:''}
       <div class="emp-meta">Entrada ${emp.entry_time||'--'} · Almoço ${emp.lunch_out_time||'--'}–${emp.lunch_in_time||'--'} · Saída ${emp.exit_time||'--'}</div>
       ${user?`<div class="emp-cred">Login: ${user.email} · PIN: ${user.pin}</div>`:''}
-      <div style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="toggleEmp('${emp.id}')">${emp.active?'Inativar':'Ativar'}</button></div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="openEmpModal('${emp.id}')">✎ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleEmp('${emp.id}')">${emp.active?'Inativar':'Ativar'}</button>
+      </div>
     </div>`;
   }).join('')||emptyState('Nenhum funcionário cadastrado.');
 }
@@ -860,7 +949,9 @@ async function saveEmployee(){
   const crate=Number(document.getElementById('ef-crate').value)||2;
   const pin=doc.replace(/\D/g,'').slice(-4)||'1234';
   const email=buildEmail(name);
-  const empData={name,document:doc,position:pos,department:dept,admission_date:adm,expected_daily_minutes:decToMin(hrs),active:true,salary,va,vt,entry_time:entry,exit_time:exitT,lunch_out_time:lout,lunch_in_time:lin,has_commission:hasComm,commission_threshold:cthresh,commission_rate:crate};
+  const empData={name,document:doc,position:pos,department:dept,admission_date:adm,
+    start_date:document.getElementById('ef-start').value||adm,
+    expected_daily_minutes:decToMin(hrs),active:true,salary,va,vt,entry_time:entry,exit_time:exitT,lunch_out_time:lout,lunch_in_time:lin,has_commission:hasComm,commission_threshold:cthresh,commission_rate:crate};
   if(DB_OK){
     try{
       const{data:empRow,error:e1}=await sb.from('employees').insert(empData).select().single();if(e1)throw e1;
@@ -889,6 +980,7 @@ async function toggleEmp(eid){
 function renderAdjustments(){
   document.getElementById('adj-date').value=todayIso();
   document.getElementById('adj-emp-row').innerHTML=employees.map(e=>`<button class="choice-btn${adjEmpId===e.id?' active':''}" onclick="selAdjEmp('${e.id}')">${e.name}</button>`).join('');
+  initBatch();
   renderAdjList();
 }
 function selAdjEmp(id){adjEmpId=id;renderAdjustments();}
@@ -930,6 +1022,164 @@ function renderAdjList(){
 function adjFromRec(eid,date){
   adjEmpId=eid;document.getElementById('adj-date').value=date;
   renderAdjustments();loadAdjustment();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══ MODAL EDITAR FUNCIONÁRIO ═══════════════
+function openEmpModal(empId){
+  const emp=employees.find(e=>e.id===empId);
+  if(!emp)return;
+  document.getElementById('modal-emp-title').textContent=`Editar — ${emp.name}`;
+  document.getElementById('modal-emp-id').value=emp.id;
+  document.getElementById('me-name').value=emp.name||'';
+  document.getElementById('me-doc').value=emp.document||'';
+  document.getElementById('me-pos').value=emp.position||'';
+  document.getElementById('me-dep').value=emp.department||'';
+  document.getElementById('me-adm').value=emp.admission_date||'';
+  document.getElementById('me-start').value=emp.start_date||emp.admission_date||todayIso();
+  document.getElementById('me-hrs').value=emp.expected_daily_minutes?emp.expected_daily_minutes/60:8;
+  document.getElementById('me-pin').value='';
+  document.getElementById('me-salary').value=emp.salary||0;
+  document.getElementById('me-va').value=emp.va||0;
+  document.getElementById('me-vt').value=emp.vt||0;
+  document.getElementById('me-entry').value=emp.entry_time||'08:00';
+  document.getElementById('me-exit').value=emp.exit_time||'17:00';
+  document.getElementById('me-lout').value=emp.lunch_out_time||'12:00';
+  document.getElementById('me-lin').value=emp.lunch_in_time||'13:00';
+  document.getElementById('me-comm').checked=emp.has_commission||false;
+  document.getElementById('me-cthresh').value=emp.commission_threshold||80000;
+  document.getElementById('me-crate').value=emp.commission_rate||2;
+  document.getElementById('modal-emp').classList.add('open');
+}
+function closeEmpModal(){
+  document.getElementById('modal-emp').classList.remove('open');
+}
+async function saveEmpModal(){
+  const empId=document.getElementById('modal-emp-id').value;
+  const name=document.getElementById('me-name').value.trim();
+  const doc=document.getElementById('me-doc').value.trim();
+  const pos=document.getElementById('me-pos').value.trim();
+  if(!name||!pos){toast('Nome e cargo são obrigatórios','error');return;}
+  const hrs=Number(document.getElementById('me-hrs').value)||8;
+  const pin=document.getElementById('me-pin').value.trim();
+  const updEmp={
+    name,document:doc,position:pos,
+    department:document.getElementById('me-dep').value.trim()||'Geral',
+    admission_date:document.getElementById('me-adm').value||todayIso(),
+    start_date:document.getElementById('me-start').value||todayIso(),
+    expected_daily_minutes:Math.round(hrs*60),
+    salary:Number(document.getElementById('me-salary').value)||0,
+    va:Number(document.getElementById('me-va').value)||0,
+    vt:Number(document.getElementById('me-vt').value)||0,
+    entry_time:document.getElementById('me-entry').value||'08:00',
+    exit_time:document.getElementById('me-exit').value||'17:00',
+    lunch_out_time:document.getElementById('me-lout').value||'12:00',
+    lunch_in_time:document.getElementById('me-lin').value||'13:00',
+    has_commission:document.getElementById('me-comm').checked,
+    commission_threshold:Number(document.getElementById('me-cthresh').value)||80000,
+    commission_rate:Number(document.getElementById('me-crate').value)||2
+  };
+  if(DB_OK){
+    try{
+      const{error}=await sb.from('employees').update(updEmp).eq('id',empId);
+      if(error)throw error;
+      if(pin){
+        const{error:e2}=await sb.from('system_users').update({pin}).eq('employee_id',empId);
+        if(e2)throw e2;
+        users=users.map(u=>u.employee_id===empId?{...u,pin}:u);
+      }
+    }catch(err){toast('Erro: '+err.message,'error');return;}
+  }
+  employees=employees.map(e=>e.id===empId?{...e,...updEmp}:e);
+  if(pin) users=users.map(u=>u.employee_id===empId?{...u,pin}:u);
+  closeEmpModal();
+  toast(`✓ ${name} atualizado`,'success');
+  renderEmployees();
+}
+
+// ═══ LANÇAMENTO EM MASSA ═════════════════════
+function initBatch(){
+  const sel=document.getElementById('batch-emp');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Selecione...</option>'+employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  document.getElementById('batch-month').value=currentMonthIso();
+}
+
+function getWorkingDaysOfMonth(monthIso,startDate){
+  const[y,m]=monthIso.split('-').map(Number);
+  const days=new Date(y,m,0).getDate();
+  const result=[];
+  for(let d=1;d<=days;d++){
+    const iso=`${monthIso}-${pad(d)}`;
+    if(isWeekend(iso)||getFeriado(iso))continue;
+    if(startDate&&iso<startDate)continue;
+    result.push(iso);
+  }
+  return result;
+}
+
+function previewBatch(){
+  const empId=document.getElementById('batch-emp').value;
+  const month=document.getElementById('batch-month').value;
+  if(!empId||!month){toast('Selecione funcionário e mês','error');return;}
+  const emp=employees.find(e=>e.id===empId);
+  const startDate=emp?.start_date||null;
+  const days=getWorkingDaysOfMonth(month,startDate);
+  const cin=document.getElementById('batch-in').value;
+  const clo=document.getElementById('batch-lo').value;
+  const cli=document.getElementById('batch-li').value;
+  const cout=document.getElementById('batch-out').value;
+  const existing=new Set(records.filter(r=>r.employee_id===empId&&r.date.startsWith(month)).map(r=>r.date));
+  const newDays=days.filter(d=>!existing.has(d));
+  if(newDays.length===0){document.getElementById('batch-preview').innerHTML=`<div class="motivation-strip rest"><p>Todos os dias úteis já têm registro neste mês.</p></div>`;return;}
+  document.getElementById('batch-preview').innerHTML=`
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:700">${newDays.length} dias úteis sem registro — serão lançados:</div>
+    ${newDays.map(d=>`
+      <div class="batch-row">
+        <div class="batch-date">${formatDay(d)} ${formatDate(d)}</div>
+        <input class="batch-input" id="bi-in-${d}" value="${cin}" placeholder="--:--">
+        <input class="batch-input" id="bi-lo-${d}" value="${clo}" placeholder="--:--">
+        <input class="batch-input" id="bi-li-${d}" value="${cli}" placeholder="--:--">
+        <input class="batch-input" id="bi-out-${d}" value="${cout}" placeholder="--:--">
+        <button onclick="removeBatchRow('${d}')" style="width:28px;height:28px;border:none;background:var(--danger-soft);color:var(--danger);border-radius:6px;cursor:pointer;font-size:14px">✕</button>
+      </div>`).join('')}`;
+}
+
+function removeBatchRow(date){
+  const row=document.querySelector(`#bi-in-${date}`)?.closest('.batch-row');
+  if(row)row.remove();
+}
+
+async function saveBatch(){
+  const empId=document.getElementById('batch-emp').value;
+  const month=document.getElementById('batch-month').value;
+  if(!empId||!month){toast('Selecione funcionário e mês','error');return;}
+  const emp=employees.find(e=>e.id===empId);
+  const startDate=emp?.start_date||null;
+  const days=getWorkingDaysOfMonth(month,startDate);
+  const existing=new Set(records.filter(r=>r.employee_id===empId&&r.date.startsWith(month)).map(r=>r.date));
+  const toInsert=days.filter(d=>!existing.has(d)&&document.getElementById(`bi-in-${d}`));
+  if(toInsert.length===0){toast('Nenhum dia para lançar','warn');return;}
+  const newRecs=toInsert.map(d=>({
+    employee_id:empId,date:d,
+    clock_in:document.getElementById(`bi-in-${d}`)?.value||null,
+    lunch_out:document.getElementById(`bi-lo-${d}`)?.value||null,
+    lunch_in:document.getElementById(`bi-li-${d}`)?.value||null,
+    clock_out:document.getElementById(`bi-out-${d}`)?.value||null,
+    adjusted_by:currentUser?.name,notes:'Lançamento em massa'
+  }));
+  if(DB_OK){
+    try{
+      const{data,error}=await sb.from('time_records').insert(newRecs).select();
+      if(error)throw error;
+      records=[...data,...records];
+    }catch(err){toast('Erro: '+err.message,'error');return;}
+  }else{
+    const inserted=newRecs.map(r=>({id:`r${Date.now()}${Math.random()}`, ...r}));
+    records=[...inserted,...records];
+  }
+  toast(`✓ ${toInsert.length} dias lançados`,'success');
+  document.getElementById('batch-preview').innerHTML='';
+  renderAdjList();
 }
 
 // ═══ HOLERITE ════════════════════════════════
