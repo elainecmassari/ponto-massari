@@ -350,7 +350,7 @@ function buildRows(recs,emps,monthIso,empId='all'){
 const PUNCH=[{field:'clock_in',label:'Entrada'},{field:'lunch_out',label:'Saída almoço'},{field:'lunch_in',label:'Volta almoço'},{field:'clock_out',label:'Saída'}];
 function getNextAction(rec){return PUNCH.find(a=>!rec?.[a.field])??null;}
 function avatarText(name){return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
-function buildEmail(name){return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/(^\.|\.$/g,'')+'@ponto.local';}
+function buildEmail(name){return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'')+'@ponto.local';}
 
 // ═══ TOAST ═══════════════════════════════════
 function toast(msg,type=''){
