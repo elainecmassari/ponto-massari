@@ -677,7 +677,13 @@ const DAYS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 function formatDay(iso){const[y,m,d]=iso.split('-').map(Number);return DAYS[new Date(y,m-1,d).getDay()];}
 function monthLabel(mi){const[y,m]=mi.split('-').map(Number);return `${MONTHS[m-1]} ${y}`;}
-function timeToMin(t){if(!t||!/^\d{2}:\d{2}$/.test(t))return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
+function timeToMin(t){
+  if(!t)return null;
+  // aceita HH:MM e HH:MM:SS
+  const m=String(t).match(/^(\d{1,2}):(\d{2})/);
+  if(!m)return null;
+  return Number(m[1])*60+Number(m[2]);
+}
 function minToTime(min){const s=min<0?'-':'';const a=Math.abs(min);return `${s}${pad(Math.floor(a/60))}:${pad(a%60)}`;}
 function decToMin(v){const n=Number(String(v).replace(',','.'));return Number.isFinite(n)&&n>0?Math.round(n*60):480;}
 function workedMin(r){
@@ -703,7 +709,9 @@ function buildRows(recs,emps,monthIso,empId='all'){
   const today=todayIso();
   const daysInMonth=new Date(monthIso.split('-')[0],monthIso.split('-')[1],0).getDate();
   const allDays=Array.from({length:daysInMonth},(_,i)=>`${monthIso}-${pad(i+1)}`);
-  const filteredEmps=empId==='all'?emps:emps.filter(e=>e.id===empId);
+  // só funcionários que têm usuário com role employee vinculado
+  const empIds=new Set(users.filter(u=>u.role==='employee'&&u.employee_id).map(u=>u.employee_id));
+  const filteredEmps=(empId==='all'?emps:emps.filter(e=>e.id===empId)).filter(e=>empIds.has(e.id));
   return filteredEmps.flatMap(e=>allDays.filter(d=>{
     if(isWeekend(d)||getFeriado(d))return false;
     if(e.start_date&&d<e.start_date)return false;
