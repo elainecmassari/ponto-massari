@@ -517,12 +517,12 @@ button:disabled{cursor:not-allowed;opacity:.6;}
         <div class="card-title">Ajustar ponto — dia específico</div>
         <div class="f-group"><label class="f-label">Funcionário</label><div class="choice-row" id="adj-emp-row"></div></div>
         <div class="form-grid">
-          <div class="f-group"><label class="f-label">Data</label><input class="f-input" id="adj-date" type="date"></div>
+          <div class="f-group"><label class="f-label">Data</label><input class="f-input" id="adj-date" type="date" onchange="loadAdjustment()"></div>
           <div class="f-group" style="display:flex;align-items:flex-end"><button class="btn btn-ghost btn-sm" onclick="loadAdjustment()">↻ Carregar</button></div>
-          <div class="f-group"><label class="f-label">Entrada</label><input class="f-input" id="adj-in" placeholder="08:00"></div>
-          <div class="f-group"><label class="f-label">Saída almoço</label><input class="f-input" id="adj-lo" placeholder="12:00"></div>
-          <div class="f-group"><label class="f-label">Volta almoço</label><input class="f-input" id="adj-li" placeholder="13:00"></div>
-          <div class="f-group"><label class="f-label">Saída</label><input class="f-input" id="adj-out" placeholder="17:00"></div>
+          <div class="f-group"><label class="f-label">Entrada</label><input class="f-input" id="adj-in" placeholder="08:00" onblur="formatTimeInput(this)"></div>
+          <div class="f-group"><label class="f-label">Saída almoço</label><input class="f-input" id="adj-lo" placeholder="12:00" onblur="formatTimeInput(this)"></div>
+          <div class="f-group"><label class="f-label">Volta almoço</label><input class="f-input" id="adj-li" placeholder="13:00" onblur="formatTimeInput(this)"></div>
+          <div class="f-group"><label class="f-label">Saída</label><input class="f-input" id="adj-out" placeholder="17:00" onblur="formatTimeInput(this)"></div>
         </div>
         <div class="f-group"><label class="f-label">Observação</label><textarea class="f-textarea" id="adj-notes" placeholder="Motivo do ajuste..."></textarea></div>
         <button class="btn btn-primary" onclick="saveAdjustment()">Salvar ajuste</button>
@@ -1414,9 +1414,21 @@ function renderAdjustments(){
   document.getElementById('adj-date').value=todayIso();
   document.getElementById('adj-emp-row').innerHTML=employees.map(e=>`<button class="choice-btn${adjEmpId===e.id?' active':''}" onclick="selAdjEmp('${e.id}')">${e.name}</button>`).join('');
   initBatch();
+  loadAdjustment(); // carrega automaticamente
   renderAdjList();
 }
-function selAdjEmp(id){adjEmpId=id;renderAdjustments();}
+function selAdjEmp(id){adjEmpId=id;loadAdjustment();renderAdjustments();}
+
+function formatTimeInput(input){
+  let v=input.value.replace(/\D/g,'');
+  if(v.length>=3){
+    // aceita 1200 → 12:00, 800 → 08:00
+    if(v.length===3)v='0'+v;
+    v=v.slice(0,2)+':'+v.slice(2,4);
+  }
+  input.value=v;
+}
+
 function loadAdjustment(){
   const date=document.getElementById('adj-date').value;
   const ex=records.find(r=>r.employee_id===adjEmpId&&r.date===date);
@@ -1425,7 +1437,7 @@ function loadAdjustment(){
   document.getElementById('adj-li').value=ex?.lunch_in??'';
   document.getElementById('adj-out').value=ex?.clock_out??'';
   document.getElementById('adj-notes').value=ex?.notes??'';
-  toast(ex?'Registro carregado':'Nenhum registro nesta data','');
+  if(ex) toast('Registro carregado','');
 }
 async function saveAdjustment(){
   const date=document.getElementById('adj-date').value;
