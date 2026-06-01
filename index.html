@@ -698,7 +698,13 @@ function workedMin(r){
 function lunchMin(r){const lo=timeToMin(r.lunch_out),li=timeToMin(r.lunch_in);return(lo!==null&&li!==null&&li>lo)?li-lo:0;}
 function missingMarks(r){
   if(isDayOff(r.date))return[];
-  return[['Entrada',r.clock_in],['Saída almoço',r.lunch_out],['Volta almoço',r.lunch_in],['Saída',r.clock_out]].filter(([,v])=>!v).map(([l])=>l);
+  // almoço é opcional — só cobra entrada e saída
+  const marks=[];
+  if(!r.clock_in)marks.push('Entrada');
+  // se saiu para almoço mas não voltou, cobra retorno
+  if(r.lunch_out&&!r.lunch_in)marks.push('Volta almoço');
+  if(!r.clock_out)marks.push('Saída');
+  return marks;
 }
 function dayStatus(r){
   if(isWeekend(r.date))return'Fim de semana';
@@ -726,7 +732,12 @@ function buildRows(recs,emps,monthIso,empId='all'){
     .sort((a,b)=>a.record.date.localeCompare(b.record.date)||a.employee.name.localeCompare(b.employee.name));
 }
 const PUNCH=[{f:'clock_in',l:'Entrada'},{f:'lunch_out',l:'Saída almoço'},{f:'lunch_in',l:'Volta almoço'},{f:'clock_out',l:'Saída'}];
-function getNextAction(rec){return PUNCH.find(a=>!rec?.[a.f])??null;}
+function getNextAction(rec){
+  if(!rec?.clock_in)return PUNCH[0]; // Entrada
+  if(rec.lunch_out&&!rec.lunch_in)return PUNCH[2]; // Volta almoço (se saiu mas não voltou)
+  if(!rec.clock_out)return PUNCH[3]; // Saída (pula almoço se não saiu)
+  return null; // completo
+}
 function avatarText(name){return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
 function buildEmail(name){return name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/^\.|\.$/g,'')+'@ponto.local';}
 function fmtBRL(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
