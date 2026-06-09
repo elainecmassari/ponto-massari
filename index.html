@@ -698,12 +698,13 @@ function workedMin(r){
 function lunchMin(r){const lo=timeToMin(r.lunch_out),li=timeToMin(r.lunch_in);return(lo!==null&&li!==null&&li>lo)?li-lo:0;}
 function missingMarks(r){
   if(isDayOff(r.date))return[];
-  // almoço é opcional — só cobra entrada e saída
   const marks=[];
   if(!r.clock_in)marks.push('Entrada');
-  // se saiu para almoço mas não voltou, cobra retorno
-  if(r.lunch_out&&!r.lunch_in)marks.push('Volta almoço');
+  if(!r.lunch_out)marks.push('Saída almoço');
+  if(!r.lunch_in)marks.push('Volta almoço');
   if(!r.clock_out)marks.push('Saída');
+  // se tem entrada e saída mas sem almoço, não é pendência
+  if(r.clock_in&&r.clock_out&&!r.lunch_out&&!r.lunch_in)return[];
   return marks;
 }
 function dayStatus(r){
@@ -734,8 +735,9 @@ function buildRows(recs,emps,monthIso,empId='all'){
 const PUNCH=[{f:'clock_in',l:'Entrada'},{f:'lunch_out',l:'Saída almoço'},{f:'lunch_in',l:'Volta almoço'},{f:'clock_out',l:'Saída'}];
 function getNextAction(rec){
   if(!rec?.clock_in)return PUNCH[0]; // Entrada
-  if(rec.lunch_out&&!rec.lunch_in)return PUNCH[2]; // Volta almoço (se saiu mas não voltou)
-  if(!rec.clock_out)return PUNCH[3]; // Saída (pula almoço se não saiu)
+  if(!rec.lunch_out)return PUNCH[1]; // Saída almoço
+  if(!rec.lunch_in)return PUNCH[2]; // Volta almoço
+  if(!rec.clock_out)return PUNCH[3]; // Saída
   return null; // completo
 }
 function avatarText(name){return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
@@ -1153,6 +1155,23 @@ function renderPunch(){
         </div>`;
       }).join('');
 }
+async function skipLunch(){
+  const emp=employees.find(e=>e.id===currentUser?.employee_id);if(!emp)return;
+  const today=todayIso();
+  const existing=records.find(r=>r.employee_id===emp.id&&r.date===today);
+  if(!existing){toast('Bata a entrada primeiro','error');return;}
+  // marca almoço como nulo explicitamente para pular
+  if(DB_OK){
+    try{
+      const{error}=await sb.from('time_records').update({lunch_out:null,lunch_in:null}).eq('id',existing.id);
+      if(error)throw error;
+    }catch(err){toast('Erro: '+err.message,'error');return;}
+  }
+  records=records.map(r=>r.id===existing.id?{...r,lunch_out:null,lunch_in:null}:r);
+  toast('Almoço pulado — registre a saída quando sair','');
+  renderPunch();
+}
+
 async function registerPunch(){
   const emp=employees.find(e=>e.id===currentUser?.employee_id);if(!emp)return;
   const today=todayIso();
@@ -1190,15 +1209,32 @@ async function registerPunch(){
   const now=currentTime();
   if(DB_OK){
     try{
-      if(existing){const{error}=await sb.from('time_records').update({[next.f]:now}).eq('id',existing.id);if(error)throw error;records=records.map(r=>r.id===existing.id?{...r,[next.f]:now}:r);}
-      else{const{data,error}=await sb.from('time_records').insert({employee_id:emp.id,date:today,[next.f]:now}).select().single();if(error)throw error;records=[data,...records];}
+      if(existing){
+        const{error}=await sb.from('time_records').update({[next.f]:now}).eq('id',existing.id);
+        if(error)throw error;
+        records=records.map(r=>r.id===existing.id?{...r,[next.f]:now}:r);
+      }else{
+        const newRec={employee_id:emp.id,date:today,[next.f]:now};
+        const{data,error}=await sb.from('time_records').insert(newRec).select().single();
+        if(error)throw error;
+        // usa o objeto local para garantir campos corretos
+        records=[{...newRec,id:data.id},...records];
+      }
     }catch(err){toast('Erro: '+err.message,'error');return;}
   }else{
     if(existing)records=records.map(r=>r.id===existing.id?{...r,[next.f]:now}:r);
     else records=[{id:`r${Date.now()}`,employee_id:emp.id,date:today,[next.f]:now},...records];
   }
   toast(`✓ ${next.l} às ${now}`,'success');
-  renderPunch();if(currentTab==='Painel')renderDashboard();
+  // Recarrega TODOS os registros do banco para garantir state 100% correto
+  if(DB_OK){
+    try{
+      const{data}=await sb.from('time_records').select('*').order('date',{ascending:false});
+      if(data) records=data;
+    }catch(e){console.warn('reload error',e);}
+  }
+  renderPunch();
+  if(currentTab==='Painel')renderDashboard();
 }
 
 // ═══ ALERTAS ═════════════════════════════════
